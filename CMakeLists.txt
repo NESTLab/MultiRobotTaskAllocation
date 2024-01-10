@@ -53,3 +53,4 @@ include_directories(
 add_subdirectory(utilities)
 add_subdirectory(interface)
 add_subdirectory(solvers)
+add_subdirectory(test)

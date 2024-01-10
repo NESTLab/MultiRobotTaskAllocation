@@ -1,0 +1,81 @@
+{
+  "setup": {
+      "robots": 3,
+      "tasks": 3,
+      "num_skills": 2,
+      "mean_percent": 10,
+      "epsilon": 0.95,
+      "use_robot_ends": false
+  },
+  "tasks": {
+      "0": {
+          "pos": {
+              "x": 10,
+              "y": 10
+          },
+          "skillset": {
+              "0": 1,
+              "BATTERY": 1.0
+          },
+          "duration": 0.2
+      },
+      "1": {
+          "pos": {
+            "x": -0.00,
+            "y": 0.00
+          },
+          "skillset": {
+            "0": 1,
+            "BATTERY": 1.0
+          },
+          "duration": 0.2
+        },
+        "2": {
+          "pos": {
+            "x": 10,
+            "y": -10
+          },
+          "skillset": {
+              "0": 1,
+              "BATTERY": 1.0
+          },
+          "duration": 0.2
+      }
+  },
+  "robots": {
+      "0": {
+          "pose": {
+            "x": -10.833504408,
+            "y": 9.0904
+          },
+          "skillset": {
+            "0": 1,
+            "BATTERY": 20
+          }
+        },
+        "1": {
+          "pose": {
+            "x": -10,
+            "y": -0
+          },
+          "skillset": {
+            "0": 1,
+            "BATTERY": 95
+          }
+        },
+        "2": {
+          "pose": {
+            "x": 0.0,
+            "y": -10
+          },
+          "skillset": {
+              "0": 1,
+              "BATTERY": 45
+          }
+      }
+  },
+  "skill_degradation_rates": {
+    "0": 0.0,
+    "BATTERY": 0.1
+  }
+}

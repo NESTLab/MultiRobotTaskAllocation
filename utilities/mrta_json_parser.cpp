@@ -5,67 +5,67 @@
  * @param json_file_name The name of the JSON file to load configurations from.
  */
 MrtaConfig MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
-  mrta_config_object = new MrtaConfig();
+  MrtaConfig mrta_config_object;
   try {
     std::ifstream file(json_file_name);
     if (!file.is_open()) {
       std::cerr << "Failed to open JSON file." << std::endl;
-      return *mrta_config_object;
+      return mrta_config_object;
     }
     json json_data;
     file >> json_data;
     file.close();
 
-    mrta_config_object->setup.number_of_robots =
+    mrta_config_object.setup.number_of_robots =
         json_data[json_setup][json_robots];
-    mrta_config_object->setup.number_of_tasks =
+    mrta_config_object.setup.number_of_tasks =
         json_data[json_setup][json_tasks];
-    mrta_config_object->setup.number_of_tasks += 2;
-    mrta_config_object->setup.number_of_capabilities =
+    mrta_config_object.setup.number_of_tasks += 2;
+    mrta_config_object.setup.number_of_capabilities =
         json_data[json_setup][json_num_skills];
 
     if (json_data[json_tasks].size() !=
-        mrta_config_object->setup.number_of_tasks - 2) {
+        mrta_config_object.setup.number_of_tasks - 2) {
       throw std::runtime_error(
           "The number of tasks in 'setup' (" +
-          std::to_string(mrta_config_object->setup.number_of_tasks - 2) +
+          std::to_string(mrta_config_object.setup.number_of_tasks - 2) +
           ") does not match the length of the field 'tasks' (" +
           std::to_string(json_data[json_tasks].size()) + ")");
     }
     if (json_data[json_robots].size() !=
-        mrta_config_object->setup.number_of_robots) {
+        mrta_config_object.setup.number_of_robots) {
       throw std::runtime_error(
           "The number of robots in 'setup' (" +
-          std::to_string(mrta_config_object->setup.number_of_robots) +
+          std::to_string(mrta_config_object.setup.number_of_robots) +
           ") does not match the length of the field 'robots' (" +
           std::to_string(json_data[json_robots].size()) + ")");
     }
 
-    mrta_config_object->setup.plot_solution =
+    mrta_config_object.setup.plot_solution =
         loadSetupFromJson(json_data, json_plot_solution, default_plot_solution);
-    mrta_config_object->setup.use_robot_ends = loadSetupFromJson(
+    mrta_config_object.setup.use_robot_ends = loadSetupFromJson(
         json_data, json_use_robot_ends, default_use_robot_ends);
-    mrta_config_object->setup.save_plot_solution = loadSetupFromJson(
+    mrta_config_object.setup.save_plot_solution = loadSetupFromJson(
         json_data, json_save_plot_solution, default_save_plot_solution);
-    mrta_config_object->setup.epsilon =
+    mrta_config_object.setup.epsilon =
         loadSetupFromJson(json_data, json_epsilon, default_epsilon);
-    mrta_config_object->setup.mean_percent =
+    mrta_config_object.setup.mean_percent =
         loadSetupFromJson(json_data, json_mean_percent, default_mean_percent);
-    mrta_config_object->setup.task_arena_size = loadSetupFromJson(
+    mrta_config_object.setup.task_arena_size = loadSetupFromJson(
         json_data, json_task_arena_size, default_task_arena_size);
-    mrta_config_object->setup.use_stochasticity = loadSetupFromJson(
+    mrta_config_object.setup.use_stochasticity = loadSetupFromJson(
         json_data, json_use_stochasticity, default_use_stochasticity);
 
-    loadTasksFromJson(json_data);
-    loadRobotsFromJson(json_data);
-    loadSkillDegradationFromJson(json_data);
+    loadTasksFromJson(json_data, mrta_config_object);
+    loadRobotsFromJson(json_data, mrta_config_object);
+    loadSkillDegradationFromJson(json_data, mrta_config_object);
     // loadPathSigmas(json_data);
 
   } catch (const std::exception &e) {
     throw std::runtime_error("Error while loading data from json file. " +
                              std::string(e.what()));
   }
-  return *mrta_config_object;
+  return mrta_config_object;
 }
 
 /**
@@ -145,7 +145,7 @@ T MrtaJsonParser::loadSetupFromJson(const json &json_data,
  *
  * @throw std::runtime_error If a required field is missing in the JSON data.
  */
-void MrtaJsonParser::loadTasksFromJson(const json &json_data) {
+void MrtaJsonParser::loadTasksFromJson(const json &json_data, MrtaConfig& mrta_config_object) {
   // Reset task requirements, tasks locations, and max completion time matrices
   int current_task_index = 0;
 
@@ -159,10 +159,10 @@ void MrtaJsonParser::loadTasksFromJson(const json &json_data) {
       // Retrieve and set the task's location
       current_task.position.pos_x =
           double(current_task_data.value()[json_pos]["x"]) *
-          mrta_config_object->setup.task_arena_size;
+          mrta_config_object.setup.task_arena_size;
       current_task.position.pos_y =
           double(current_task_data.value()[json_pos]["y"]) *
-          mrta_config_object->setup.task_arena_size;
+          mrta_config_object.setup.task_arena_size;
 
       // Set the maximum completion time for the task
       current_task.duration = current_task_data.value()[json_duration];
@@ -178,22 +178,22 @@ void MrtaJsonParser::loadTasksFromJson(const json &json_data) {
 
           // Check if the current skill already exists in the all skills name
           // list.
-          if (!(std::find(mrta_config_object->setup.skill_names.begin(),
-                          mrta_config_object->setup.skill_names.end(),
+          if (!(std::find(mrta_config_object.setup.skill_names.begin(),
+                          mrta_config_object.setup.skill_names.end(),
                           skill_name) !=
-                mrta_config_object->setup.skill_names.end()))
+                mrta_config_object.setup.skill_names.end()))
             // If not, add it
-            mrta_config_object->setup.skill_names.push_back(skill_name);
+            mrta_config_object.setup.skill_names.push_back(skill_name);
 
           current_task.skillset[c.key()] = c.value();
         } catch (const std::exception &e) {
           throw std::runtime_error(
               "skill id " + c.key() +
               " could not be inserted in vector of size " +
-              std::to_string(mrta_config_object->setup.number_of_capabilities));
+              std::to_string(mrta_config_object.setup.number_of_capabilities));
         }
       }
-      mrta_config_object->tasks.push_back(current_task);
+      mrta_config_object.tasks.push_back(current_task);
     }
   } catch (const std::exception &e) {
     // Handle exception when a required field is missing in the JSON data
@@ -239,7 +239,7 @@ void MrtaJsonParser::loadTasksFromJson(const json &json_data) {
  *
  * @throw std::runtime_error If a required field is missing in the JSON data.
  */
-void MrtaJsonParser::loadRobotsFromJson(const json &json_data) {
+void MrtaJsonParser::loadRobotsFromJson(const json &json_data, MrtaConfig& mrta_config_object) {
   // Reset robot requirements, robots locations, and max completion time
   // matrices
   int current_robot_index = 0;
@@ -253,10 +253,10 @@ void MrtaJsonParser::loadRobotsFromJson(const json &json_data) {
       // Retrieve and set the robot's location
       current_robot.position.pos_x =
           double(current_robot_data.value()[json_pose]["x"]) *
-          mrta_config_object->setup.task_arena_size;
+          mrta_config_object.setup.task_arena_size;
       current_robot.position.pos_y =
           double(current_robot_data.value()[json_pose]["y"]) *
-          mrta_config_object->setup.task_arena_size;
+          mrta_config_object.setup.task_arena_size;
 
       // Iterate over the skills required for the robot
       for (const auto &c : current_robot_data.value()[json_skillset].items()) {
@@ -271,20 +271,20 @@ void MrtaJsonParser::loadRobotsFromJson(const json &json_data) {
 
           // Check if the current skill already exists in the all skills name
           // list.
-          if (!(std::find(mrta_config_object->setup.skill_names.begin(),
-                          mrta_config_object->setup.skill_names.end(),
+          if (!(std::find(mrta_config_object.setup.skill_names.begin(),
+                          mrta_config_object.setup.skill_names.end(),
                           skill_name) !=
-                mrta_config_object->setup.skill_names.end()))
+                mrta_config_object.setup.skill_names.end()))
             // If not, add it
-            mrta_config_object->setup.skill_names.push_back(skill_name);
+            mrta_config_object.setup.skill_names.push_back(skill_name);
         } catch (const std::exception &e) {
           throw std::runtime_error(
               "skill id " + c.key() +
               " could not be inserted in vector of size " +
-              std::to_string(mrta_config_object->setup.number_of_capabilities));
+              std::to_string(mrta_config_object.setup.number_of_capabilities));
         }
       }
-      mrta_config_object->robots.push_back(current_robot);
+      mrta_config_object.robots.push_back(current_robot);
     }
   } catch (const std::exception &e) {
     // Handle exception when a required field is missing in the JSON data
@@ -365,9 +365,9 @@ of the skills.
  *
  * @param json_data
  */
-void MrtaJsonParser::loadSkillDegradationFromJson(const json &json_data) {
+void MrtaJsonParser::loadSkillDegradationFromJson(const json &json_data, MrtaConfig& mrta_config_object) {
   double default_value = 0.0;
-  for (std::string skill : mrta_config_object->setup.skill_names) {
+  for (std::string skill : mrta_config_object.setup.skill_names) {
 
     auto res = std::mismatch(SKILL_NAME_PREFIX.begin(), SKILL_NAME_PREFIX.end(),
                              skill.begin());
@@ -377,7 +377,7 @@ void MrtaJsonParser::loadSkillDegradationFromJson(const json &json_data) {
 
     if (json_data[json_skill_degradation_rates].contains(skill)) {
       try {
-        mrta_config_object->skill_degradation_rates[skill] =
+        mrta_config_object.skill_degradation_rates[skill] =
             json_data[json_skill_degradation_rates][skill];
       } catch (const std::exception &e) {
         // Field not found or invalid type, using default value
@@ -385,7 +385,7 @@ void MrtaJsonParser::loadSkillDegradationFromJson(const json &json_data) {
                    << "JSON Error accessing degradation rate for \"" << skill
                    << "\". Loading the default value of: " << default_value
                    << std::endl;
-        mrta_config_object->skill_degradation_rates[skill] = default_value;
+        mrta_config_object.skill_degradation_rates[skill] = default_value;
       }
     } else {
       // Field not found or invalid type, using default value
@@ -393,7 +393,7 @@ void MrtaJsonParser::loadSkillDegradationFromJson(const json &json_data) {
                  << "JSON Error accessing degradation rate for \"" << skill
                  << "\". Loading the default value of: " << default_value
                  << std::endl;
-      mrta_config_object->skill_degradation_rates[skill] = default_value;
+      mrta_config_object.skill_degradation_rates[skill] = default_value;
     }
   }
 }

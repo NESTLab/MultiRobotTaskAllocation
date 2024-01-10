@@ -7,8 +7,8 @@
 
 class MrtaConfig {
 public:
-  MrtaConfig();
-  ~MrtaConfig();
+  MrtaConfig(){};
+  ~MrtaConfig(){};
 
   struct Setup {
     int number_of_robots;
