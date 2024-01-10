@@ -7,7 +7,8 @@
 
 class MrtaConfig {
 public:
-  MrtaConfig(){};
+  MrtaConfig();
+  ~MrtaConfig();
 
   struct Setup {
     int number_of_robots;
@@ -57,6 +58,20 @@ public:
   bool isDebugMode() { return Debug; }
 
   void setDebugMode(bool debug_mode) { Debug = debug_mode; }
+
+  void SetSetupInfo(const Setup& setup_in) {
+    setup = setup_in;
+  };
+
+  void SetAllTasks(const std::vector<Task> & tasks_in) {
+     tasks = tasks_in; }
+
+  void SetAllRobots(const std::vector<Robot> & robots_in) {
+     robots = robots_in; }
+
+  void SetSkillDegradations(const std::map<std::string, double> & skill_degradation_rates_in) {
+    skill_degradation_rates = skill_degradation_rates_in;
+  }
 
 protected:
   // Setup values

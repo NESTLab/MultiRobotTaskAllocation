@@ -42,6 +42,14 @@ find_package(GUROBI REQUIRED)
 include_directories(${GUROBI_INCLUDE_DIRS})
 link_libraries(${GUROBI_CXX_LIBRARY} ${GUROBI_LIBRARY})
 
+include_directories(
+  utilities/include
+  interface/include
+  solvers/include
+  ${catkin_INCLUDE_DIRS}
+)
+
 # Compile the code
 add_subdirectory(utilities)
-# add_subdirectory(interface)
+add_subdirectory(interface)
+add_subdirectory(solvers)
