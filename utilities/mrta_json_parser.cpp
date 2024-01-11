@@ -9,14 +9,11 @@ MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
 
   MrtaConfig::CompleteConfig mrta_config;
 
-  std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr =
-      std::make_shared<MrtaConfig::CompleteConfig>(mrta_config);
-
   try {
     std::ifstream file(json_file_name);
     if (!file.is_open()) {
       std::cerr << "Failed to open JSON file." << std::endl;
-      return (mrta_config_ptr);
+      return (std::make_shared<MrtaConfig::CompleteConfig>(mrta_config));
     }
     json json_data;
     file >> json_data;
@@ -32,6 +29,9 @@ MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
     throw std::runtime_error("Error while loading data from json file. " +
                              std::string(e.what()));
   }
+  std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr =
+      std::make_shared<MrtaConfig::CompleteConfig>(mrta_config);
+  std::cout<<"Number of robots at the source:"<<mrta_config_ptr->setup.number_of_robots<<std::endl;
   return mrta_config_ptr;
 }
 
@@ -51,7 +51,6 @@ T MrtaJsonParser::getSetupValueFromJson(const json &json_data,
 
   if (json_data[json_setup].contains(field_name)) {
     try {
-      std::cout << "Loading " << field_name << std::endl;
       loaded_value = json_data[json_setup][field_name];
     } catch (const std::exception &e) {
       // Field not found or invalid type, using default value

@@ -12,7 +12,7 @@ public:
 
   virtual std::shared_ptr<MrtaSolution::CompleteSolution> solveMrtaProblem() = 0;
 
-  virtual bool setMrtaConfig(const MrtaConfig& config_object) = 0;
+  virtual bool setMrtaConfig(const MrtaConfig::CompleteConfig &mrta_complete_config) = 0;
 
   virtual bool updateWorldStatus() = 0;
 

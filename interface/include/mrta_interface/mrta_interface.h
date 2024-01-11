@@ -22,7 +22,8 @@ public:
   // To check and print if all the essential fields are present in the config
   // Return false if mandatory field is missing
   // Also print which optional fields are provided and which are missing
-  bool healthCheckConfig(const MrtaConfig &config_object);
+  bool
+  healthCheckConfig(const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   // This is strictly to be used by DECENTRALIZED solvers.
   // This will update what tasks have been already attended, which robot is
@@ -40,10 +41,26 @@ public:
   // status
   //    and keeping track of convergence will be up to the user.
   std::shared_ptr<MrtaSolution::CompleteSolution>
-  solveMrtaProblem(const MrtaConfig &config_object) {
+  solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config) {
     return solver_method->solveMrtaProblem();
   };
 
+  void debugPrintCompleteConfig(
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
+  void debugPrintSetup(const MrtaConfig::Setup &mrta_setup);
+  void debugPrintTasksMap(
+      const std::map<std::string, MrtaConfig::Task> &mrta_task_map);
+  void debugPrintRobotsMap(
+      const std::map<std::string, MrtaConfig::Robot> &mrta_robot_map);
+  void debugPrintEnvironment(const MrtaConfig::Environment &mrta_environment);
+
 private:
   std::shared_ptr<MrtaGenericSolver> solver_method;
+
+  template <typename T>
+  void debugPrintSingleLine(const std::string &field, T value,
+                            int number_of_indents);
+
+  const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
+  const int NUMBER_OF_DASHES_PER_INDENT = 3;
 };

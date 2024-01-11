@@ -13,12 +13,9 @@ struct Setup {
 
   double epsilon;
   double mean_percent;
-  double task_arena_size;
 
   bool use_stochasticity;
-  bool plot_solution;
   bool use_robot_ends;
-  bool save_plot_solution;
 
   std::vector<std::string> all_task_names;
   std::vector<std::string> all_robot_names;
