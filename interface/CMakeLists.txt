@@ -4,6 +4,5 @@ add_library(mrta_interface
 target_link_libraries(
   mrta_interface
   mrta_utilities
-  ${PROJECT_NAME}
   ${catkin_LIBRARIES}
 )

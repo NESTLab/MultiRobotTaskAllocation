@@ -1,5 +1,6 @@
-add_library(mrta_solvers MODULE
+add_library(mrta_solvers
   mrta_generic_solver.cpp
+  mrta_milp_solver.cpp
   )
 
 target_link_libraries(

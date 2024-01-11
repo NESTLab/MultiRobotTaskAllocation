@@ -34,12 +34,4 @@ namespace MrtaSolution
     SolutionQuality solution_quality;
     std::map<std::string, RobotTasksSchedule> robots_schedule;
   };
-
-  struct SingleRobotSolution
-  {
-    int robot_id;
-    SolutionQuality solution_quality;
-    RobotTasksSchedule robot_schedule;
-  };
-  
 };

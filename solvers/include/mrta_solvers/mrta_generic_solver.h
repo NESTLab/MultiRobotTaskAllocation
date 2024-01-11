@@ -6,15 +6,16 @@
 class MrtaGenericSolver
 {
 public:
-  MrtaGenericSolver(/* args */);
-  ~MrtaGenericSolver();
+  MrtaGenericSolver(/* args */){};
+  ~MrtaGenericSolver(){};
 
-template<typename T>
-  const T& solveMrtaProblem();
+  virtual MrtaSolution::CompleteSolution solveMrtaProblem() = 0;
 
-  virtual bool setMrtaConfig() = 0;
+  virtual bool setMrtaConfig(const MrtaConfig& config_object) = 0;
 
-  virtual bool updateWorldStatus();
+  virtual bool updateWorldStatus() = 0;
+
+  void debugPrintSolution(const MrtaSolution::CompleteSolution solution);
 
 private:
   /* data */

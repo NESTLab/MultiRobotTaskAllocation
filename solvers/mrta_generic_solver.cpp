@@ -1,9 +1,6 @@
 #include <mrta_solvers/mrta_generic_solver.h>
 
-MrtaGenericSolver::MrtaGenericSolver(/* args */)
-{
-}
-
-MrtaGenericSolver::~MrtaGenericSolver()
-{
+void MrtaGenericSolver::debugPrintSolution(const MrtaSolution::CompleteSolution solution) {
+  std::cout<<"Printing solution:"<<std::endl;
+  // Definitly not printing solution...
 }

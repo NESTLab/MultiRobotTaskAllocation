@@ -6,14 +6,16 @@ class MrtaMilpSolver: public MrtaGenericSolver
 private:
   /* data */
 public:
-  MrtaMilpSolver(/* args */);
-  ~MrtaMilpSolver();
+  MrtaMilpSolver(/* args */){};
+  ~MrtaMilpSolver(){};
+
+  MrtaSolution::CompleteSolution solveMrtaProblem();
+
+  bool setMrtaConfig(const MrtaConfig& config_object) {
+    return true;
+  };
+
+  bool updateWorldStatus() {
+    return true;
+  };
 };
-
-MrtaMilpSolver::MrtaMilpSolver(/* args */)
-{
-}
-
-MrtaMilpSolver::~MrtaMilpSolver()
-{
-}
