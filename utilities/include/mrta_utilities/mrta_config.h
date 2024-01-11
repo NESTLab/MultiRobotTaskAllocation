@@ -5,82 +5,54 @@
 #include <string>
 #include <vector>
 
-class MrtaConfig {
-public:
-  MrtaConfig(){};
-  ~MrtaConfig(){};
+namespace MrtaConfig {
+struct Setup {
+  int number_of_robots;
+  int number_of_tasks;
+  int number_of_skills;
 
-  struct Setup {
-    int number_of_robots;
-    int number_of_tasks;
-    int number_of_capabilities;
+  double epsilon;
+  double mean_percent;
+  double task_arena_size;
 
-    double epsilon;
-    double mean_percent;
-    double task_arena_size;
+  bool use_stochasticity;
+  bool plot_solution;
+  bool use_robot_ends;
+  bool save_plot_solution;
 
-    bool use_stochasticity;
-    bool plot_solution;
-    bool use_robot_ends;
-    bool save_plot_solution;
-
-    std::vector<std::string> skill_names;
-  };
-
-  struct Position {
-    double pos_x;
-    double pos_y;
-  };
-
-  struct Task {
-    int id;
-    Position position;
-    std::map<std::string, double> skillset;
-    double duration;
-  };
-
-  struct Robot {
-    int id;
-    Position position;
-    std::map<std::string, double> skillset;
-  };
-
-  const Setup &GetSetupInfo() const { return setup; }
-
-  const std::vector<Task> &GetAllTasks() const { return tasks; }
-
-  const std::vector<Robot> &GetAllRobots() const { return robots; }
-
-  const std::map<std::string, double> &GetSkillDegradations() const {
-    return skill_degradation_rates;
-  }
-
-  bool isDebugMode() { return Debug; }
-
-  void setDebugMode(bool debug_mode) { Debug = debug_mode; }
-
-  void SetSetupInfo(const Setup& setup_in) {
-    setup = setup_in;
-  };
-
-  void SetAllTasks(const std::vector<Task> & tasks_in) {
-     tasks = tasks_in; }
-
-  void SetAllRobots(const std::vector<Robot> & robots_in) {
-     robots = robots_in; }
-
-  void SetSkillDegradations(const std::map<std::string, double> & skill_degradation_rates_in) {
-    skill_degradation_rates = skill_degradation_rates_in;
-  }
-
-protected:
-  // Setup values
-  Setup setup;
-  std::vector<Task> tasks;
-  std::vector<Robot> robots;
-  std::map<std::string, double> skill_degradation_rates;
-
-  bool Debug = false;
-
-  friend class MrtaJsonParser;
+  std::vector<std::string> all_task_names;
+  std::vector<std::string> all_robot_names;
+  std::vector<std::string> all_skill_names;
 };
+
+struct Position {
+  double pos_x;
+  double pos_y;
+};
+
+struct Task {
+  std::string task_name;
+  Position position;
+  std::map<std::string, double> skillset;
+  double duration;
+};
+
+struct Robot {
+  std::string robot_name;
+  Position position;
+  std::map<std::string, double> skillset;
+};
+
+struct Environment {
+  std::map<std::string, double> skill_degradation_rate_map;
+  std::map<std::string, double> path_stochasticity_sigma_values;
+};
+
+struct CompleteConfig {
+  Setup setup;
+  Environment environment;
+  std::map<std::string, Task> tasks_map;
+  std::map<std::string, Robot> robots_map;
+};
+
+}; // namespace MrtaConfig

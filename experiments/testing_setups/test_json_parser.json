@@ -5,7 +5,8 @@
       "num_skills": 2,
       "mean_percent": 10,
       "epsilon": 0.95,
-      "use_robot_ends": false
+      "use_robot_ends": false,
+      "use_stochasticity": false
   },
   "tasks": {
       "0": {

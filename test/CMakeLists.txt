@@ -5,7 +5,7 @@ add_executable(mrta_test
 target_link_libraries(
   mrta_test
   mrta_utilities
-  mrta_interface
-  mrta_solvers
+  # mrta_interface
+  # mrta_solvers
   ${catkin_LIBRARIES}
 )

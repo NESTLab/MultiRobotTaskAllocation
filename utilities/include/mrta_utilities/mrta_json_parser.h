@@ -6,47 +6,52 @@ using json = nlohmann::json;
 
 class MrtaJsonParser {
 public:
-    MrtaJsonParser(){};
-    ~MrtaJsonParser(){};
+  MrtaJsonParser(){};
+  ~MrtaJsonParser(){};
 
-    // static const MrtaConfig& MrtaJsonParser(const std::string& json_file_name);
-    static MrtaConfig parseJsonFile(const std::string& json_file_name);
+  // static const MrtaConfig& MrtaJsonParser(const std::string& json_file_name);
+  static std::shared_ptr<MrtaConfig::CompleteConfig>
+  parseJsonFile(const std::string &json_file_name);
 
 private:
-    // JSON field names
-    inline const static std::string json_setup = "setup";
-    inline const static std::string json_robots = "robots";
-    inline const static std::string json_tasks = "tasks";
-    inline const static std::string json_num_skills = "num_skills";
-    inline const static std::string json_plot_solution = "plot_solution";
-    inline const static std::string json_pos = "pos";
-    inline const static std::string json_pose = "pose";
-    inline const static std::string json_duration = "duration";
-    inline const static std::string json_skillset = "skillset";
-    inline const static std::string json_epsilon = "epsilon";
-    inline const static std::string json_mean_percent = "mean_percent";
-    inline const static std::string json_sigma_percent = "sigma_percent";
-    inline const static std::string json_use_robot_ends = "use_robot_ends";
-    inline const static std::string json_task_arena_size = "task_arena_size";
-    inline const static std::string json_save_plot_solution = "save_plot_solution";
-    inline const static std::string json_use_stochasticity = "use_stochasticity";
-    inline const static std::string json_skill_degradation_rates = "skill_degradation_rates";
-    inline const static std::string SKILL_NAME_PREFIX = "skill_";
+  // JSON field names
+  inline const static std::string json_setup = "setup";
+  inline const static std::string json_robots = "robots";
+  inline const static std::string json_tasks = "tasks";
+  inline const static std::string json_num_skills = "num_skills";
+  inline const static std::string json_pos = "pos";
+  inline const static std::string json_pose = "pose";
+  inline const static std::string json_duration = "duration";
+  inline const static std::string json_skillset = "skillset";
+  inline const static std::string json_epsilon = "epsilon";
+  inline const static std::string json_mean_percent = "mean_percent";
+  inline const static std::string json_use_robot_ends = "use_robot_ends";
+  inline const static std::string json_use_stochasticity = "use_stochasticity";
+  inline const static std::string json_skill_degradation_rates =
+      "skill_degradation_rates";
 
-    // Default values
-    inline const static bool default_plot_solution = false;
-    inline const static bool default_use_robot_ends = true;
-    inline const static bool default_save_plot_solution = false;
-    inline const static bool default_use_stochasticity = true;
-    inline const static double default_epsilon = 0.95;
-    inline const static double default_mean_percent = 10;
-    inline const static double default_task_arena_size = 1.0;
-    inline const static int json_battery_task = 0;
+  // Default values
+  inline const static bool default_use_robot_ends = true;
+  inline const static bool default_use_stochasticity = true;
+  inline const static double default_epsilon = 0.95;
+  inline const static double default_mean_percent = 10;
 
-    template<typename T>
-    static T loadSetupFromJson(const json& json_data, const std::string& field_name, const T& default_value);
-    static void loadTasksFromJson(const json& json_data, MrtaConfig& config_object);
-    static void loadRobotsFromJson(const json& json_data, MrtaConfig& config_object);
-    // static void loadPathSigmas(const json& json_data, MrtaConfig& config_object);
-    static void loadSkillDegradationFromJson(const json& json_data, MrtaConfig& config_object);
+  template <typename T>
+  static T getSetupValueFromJson(const json &json_data,
+                                 const std::string &field_name,
+                                 const T &default_value);
+  static void loadSetupFromJson(const json &json_data,
+                                MrtaConfig::Setup &mrta_config_setup);
+
+  static void
+  loadTasksFromJson(const json &json_data, MrtaConfig::Setup &mrta_config_setup,
+                    std::map<std::string, MrtaConfig::Task> &mrta_config_task);
+
+  static void loadRobotsFromJson(
+      const json &json_data, MrtaConfig::Setup &mrta_config_setup,
+      std::map<std::string, MrtaConfig::Robot> &mrta_config_robot);
+
+  static void loadSkillDegradationFromJson(
+      const json &json_data, const MrtaConfig::Setup &mrta_config_setup,
+      MrtaConfig::Environment &mrta_config_environment);
 };

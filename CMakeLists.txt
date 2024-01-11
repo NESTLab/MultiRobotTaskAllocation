@@ -51,6 +51,6 @@ include_directories(
 
 # Compile the code
 add_subdirectory(utilities)
-add_subdirectory(interface)
-add_subdirectory(solvers)
+# add_subdirectory(interface)
+# add_subdirectory(solvers)
 add_subdirectory(test)
