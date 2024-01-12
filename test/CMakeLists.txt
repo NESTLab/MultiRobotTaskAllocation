@@ -6,6 +6,6 @@ target_link_libraries(
   mrta_test
   mrta_utilities
   mrta_interface
-  # mrta_solvers
+  mrta_solvers
   ${catkin_LIBRARIES}
 )

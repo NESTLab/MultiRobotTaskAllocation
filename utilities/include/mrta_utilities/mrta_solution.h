@@ -19,7 +19,7 @@ namespace MrtaSolution
 
     float sum_of_all_robot_schedules;
 
-    float solver_runtime;
+    std::string solver_runtime;
   };
 
   struct RobotTasksSchedule {
@@ -32,6 +32,6 @@ namespace MrtaSolution
   struct CompleteSolution
   {
     SolutionQuality solution_quality;
-    std::map<std::string, RobotTasksSchedule> robots_schedule;
+    std::map<std::string, RobotTasksSchedule> robot_task_schedule_map;
   };
 };
