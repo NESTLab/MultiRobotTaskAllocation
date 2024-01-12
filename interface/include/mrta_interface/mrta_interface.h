@@ -58,8 +58,19 @@ private:
   std::shared_ptr<MrtaGenericSolver> solver_method;
 
   template <typename T>
-  void debugPrintSingleLine(const std::string &field, T value,
+  void debugPrintSingleLine(const std::string &field, const T &value,
                             int number_of_indents);
+  template <typename T>
+  bool healthCheckField(const std::string &field, const T &value);
+  bool healthCheckNumOfElements(const std::string &item,
+                                const std::string &item_detail,
+                                int expected_count, int received_count);
+  bool healthCheckMandatoryFields(
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
+  bool healthCheckNumOfRobots(
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
+  bool healthCheckNumOfTasks(
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
   const int NUMBER_OF_DASHES_PER_INDENT = 3;

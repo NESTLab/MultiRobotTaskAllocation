@@ -78,13 +78,13 @@ void MrtaJsonParser::loadSetupFromJson(const json &json_data,
 
   mrta_config_setup.number_of_robots = json_data[json_setup][json_robots];
   mrta_config_setup.number_of_tasks = json_data[json_setup][json_tasks];
-  mrta_config_setup.number_of_tasks += 2;
+  // mrta_config_setup.number_of_tasks += 2;
   mrta_config_setup.number_of_skills = json_data[json_setup][json_num_skills];
 
-  if (json_data[json_tasks].size() != mrta_config_setup.number_of_tasks - 2) {
+  if (json_data[json_tasks].size() != mrta_config_setup.number_of_tasks) {
     throw std::runtime_error(
         "The number of tasks in 'setup' (" +
-        std::to_string(mrta_config_setup.number_of_tasks - 2) +
+        std::to_string(mrta_config_setup.number_of_tasks) +
         ") does not match the length of the field 'tasks' (" +
         std::to_string(json_data[json_tasks].size()) + ")");
   }
@@ -262,6 +262,12 @@ void MrtaJsonParser::loadRobotsFromJson(
           double(current_robot_data.value()[json_pose]["x"]);
       mrta_config_robot_current.position.pos_y =
           double(current_robot_data.value()[json_pose]["y"]);
+
+      // Retrieve and set the robot's location
+      mrta_config_robot_current.desired_end_position.pos_x =
+          double(current_robot_data.value()[json_desired_end_position]["x"]);
+      mrta_config_robot_current.desired_end_position.pos_y =
+          double(current_robot_data.value()[json_desired_end_position]["y"]);
 
       // Iterate over the skills required for the robot
       for (const auto &c : current_robot_data.value()[json_skillset].items()) {

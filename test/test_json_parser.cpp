@@ -8,6 +8,7 @@ int main(int argc, char const *argv[])
   MrtaInterface mrta_interface;
 
   mrta_interface.debugPrintCompleteConfig(*mrta_config_ptr);
+  std::cout<<mrta_interface.healthCheckConfig(*mrta_config_ptr)<<std::endl;
 
   // mrta_interface.setMrtaSolverMethod(std::make_shared<MrtaMilpSolver>());
   // mrta_interface.solveMrtaProblem(json_config);

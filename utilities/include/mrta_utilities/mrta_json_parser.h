@@ -21,6 +21,7 @@ private:
   inline const static std::string json_num_skills = "num_skills";
   inline const static std::string json_pos = "pos";
   inline const static std::string json_pose = "pose";
+  inline const static std::string json_desired_end_position = "desired_end_position";
   inline const static std::string json_duration = "duration";
   inline const static std::string json_skillset = "skillset";
   inline const static std::string json_epsilon = "epsilon";

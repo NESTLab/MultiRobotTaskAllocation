@@ -111,28 +111,107 @@ void MrtaInterface::debugPrintEnvironment(
 
   debugPrintSingleLine("skill_degradation_rate_map", "", indent_level);
   ++indent_level;
-  for (const auto& skill : mrta_environment.skill_degradation_rate_map)
-  {
+  for (const auto &skill : mrta_environment.skill_degradation_rate_map) {
     debugPrintSingleLine(skill.first, skill.second, indent_level);
   }
   --indent_level;
 
   debugPrintSingleLine("path_stochasticity_sigma_values", "", indent_level);
   ++indent_level;
-  for (const auto& path : mrta_environment.path_stochasticity_sigma_values)
-  {
+  for (const auto &path : mrta_environment.path_stochasticity_sigma_values) {
     debugPrintSingleLine(path.first, path.second, indent_level);
   }
   --indent_level;
-  
 }
 
 template <typename T>
-void MrtaInterface::debugPrintSingleLine(const std::string &field, T value,
+void MrtaInterface::debugPrintSingleLine(const std::string &field,
+                                         const T &value,
                                          int number_of_indents) {
   for (int i = 0; i < number_of_indents - 1; i++)
     std::cout << "|" << std::string(NUMBER_OF_DASHES_PER_INDENT, ' ');
 
   std::cout << "|" << std::string(NUMBER_OF_DASHES_PER_INDENT, '-') << field
             << " : " << value << std::endl;
+}
+
+bool MrtaInterface::healthCheckConfig(
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  bool health_ok = true;
+
+  // Check if setup has mandatory fields
+  health_ok = health_ok && healthCheckMandatoryFields(mrta_complete_config);
+  
+  // Check if number of things in setup matches number of elements in maps
+  health_ok = health_ok && healthCheckNumOfRobots(mrta_complete_config);
+  health_ok = health_ok && healthCheckNumOfTasks(mrta_complete_config);
+
+  return health_ok;
+}
+
+bool MrtaInterface::healthCheckMandatoryFields(
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  bool health_ok = true;
+  health_ok = health_ok &&
+              healthCheckField("number_of_robots",
+                               mrta_complete_config.setup.number_of_robots);
+  health_ok =
+      health_ok && healthCheckField("number_of_tasks",
+                                    mrta_complete_config.setup.number_of_tasks);
+  health_ok = health_ok &&
+              healthCheckField("number_of_skills",
+                               mrta_complete_config.setup.number_of_skills);
+
+  return health_ok;
+}
+bool MrtaInterface::healthCheckNumOfRobots(
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  bool health_ok = true;
+  health_ok =
+      health_ok && healthCheckNumOfElements(
+                       "robots", "config.setup.all_robot_names",
+                       mrta_complete_config.setup.number_of_robots,
+                       mrta_complete_config.setup.all_robot_names.size());
+  health_ok = health_ok && healthCheckNumOfElements(
+                               "robots", "config.robots_map",
+                               mrta_complete_config.setup.number_of_robots,
+                               mrta_complete_config.robots_map.size());
+
+  return health_ok;
+}
+bool MrtaInterface::healthCheckNumOfTasks(
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  bool health_ok = true;
+  health_ok =
+      health_ok && healthCheckNumOfElements(
+                       "tasks", "config.setup.all_task_names",
+                       mrta_complete_config.setup.number_of_tasks,
+                       mrta_complete_config.setup.all_task_names.size());
+  health_ok = health_ok && healthCheckNumOfElements(
+                               "tasks", "config.tasks_map",
+                               mrta_complete_config.setup.number_of_tasks,
+                               mrta_complete_config.tasks_map.size());
+
+  return health_ok;
+}
+
+template <typename T>
+bool MrtaInterface::healthCheckField(const std::string &field, const T &value) {
+  bool health_ok = value != 0;
+  if (!health_ok)
+    std::cerr << "[ERROR] | Mandatory field '" << field
+              << "' in 'config.setup' has not been initialized." << std::endl;
+  return health_ok;
+}
+
+bool MrtaInterface::healthCheckNumOfElements(const std::string &item,
+                                             const std::string &item_detail,
+                                             int expected_count,
+                                             int received_count) {
+  bool health_ok = expected_count == received_count;
+  if (!health_ok)
+    std::cerr << "[ERROR] | The number of " << item << " in " << item_detail
+              << " does not match the number specified in config.setup"
+              << std::endl;
+  return health_ok;
 }

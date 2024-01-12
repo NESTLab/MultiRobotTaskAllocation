@@ -49,6 +49,10 @@
             "x": -10.833504408,
             "y": 9.0904
           },
+          "desired_end_position": {
+            "x": -10.833504408,
+            "y": 9.0904
+          },
           "skillset": {
             "0": 1,
             "BATTERY": 20
@@ -59,6 +63,10 @@
             "x": -10,
             "y": -0
           },
+          "desired_end_position": {
+            "x": -10,
+            "y": -0
+          },
           "skillset": {
             "0": 1,
             "BATTERY": 95
@@ -66,6 +74,10 @@
         },
         "2": {
           "pose": {
+            "x": 0.0,
+            "y": -10
+          },
+          "desired_end_position": {
             "x": 0.0,
             "y": -10
           },
