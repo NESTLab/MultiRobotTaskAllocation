@@ -1,9 +1,9 @@
-add_executable(mrta_test 
-  test_json_parser.cpp
+add_executable(mrta_example 
+  usage_example.cpp
   )
 
 target_link_libraries(
-  mrta_test
+  mrta_example
   mrta_utilities
   mrta_interface
   mrta_solvers

@@ -37,10 +37,10 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 find_package (nlohmann_json REQUIRED NO_MODULE)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-find_package(GUROBI REQUIRED)
-include_directories(${GUROBI_INCLUDE_DIRS})
-link_libraries(${GUROBI_CXX_LIBRARY} ${GUROBI_LIBRARY})
+# set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+# find_package(GUROBI REQUIRED)
+# include_directories(${GUROBI_INCLUDE_DIRS})
+# link_libraries(${GUROBI_CXX_LIBRARY} ${GUROBI_LIBRARY})
 
 include_directories(
   utilities/include
@@ -53,4 +53,4 @@ include_directories(
 add_subdirectory(utilities)
 add_subdirectory(interface)
 add_subdirectory(solvers)
-add_subdirectory(test)
+add_subdirectory(usage_example)
