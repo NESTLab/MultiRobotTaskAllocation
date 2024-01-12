@@ -4,9 +4,9 @@
 // #include <mrta_solvers/mrta_milp_solver.h>
 
 int main(int argc, char const *argv[]) {
-  std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr =
-      MrtaJsonParser::parseJsonFile(
-          "usage_example/usage_example.json");
+  std::shared_ptr<const MrtaConfig::CompleteConfig> const mrta_config_ptr =
+      MrtaJsonParser::parseJsonFile("usage_example/usage_example.json");
+
   MrtaInterface mrta_interface;
 
   mrta_interface.debugPrintConfigCompleteConfig(mrta_config_ptr);

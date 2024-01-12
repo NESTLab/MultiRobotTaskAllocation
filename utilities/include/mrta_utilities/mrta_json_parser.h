@@ -10,7 +10,7 @@ public:
   ~MrtaJsonParser(){};
 
   // static const MrtaConfig& MrtaJsonParser(const std::string& json_file_name);
-  static std::shared_ptr<MrtaConfig::CompleteConfig>
+  static std::shared_ptr<const MrtaConfig::CompleteConfig> const 
   parseJsonFile(const std::string &json_file_name);
 
 private:

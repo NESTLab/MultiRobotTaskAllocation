@@ -4,7 +4,7 @@
  * @brief Constructs a new Config object.
  * @param json_file_name The name of the JSON file to load configurations from.
  */
-std::shared_ptr<MrtaConfig::CompleteConfig>
+std::shared_ptr<const MrtaConfig::CompleteConfig> const
 MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
 
   MrtaConfig::CompleteConfig mrta_config;
