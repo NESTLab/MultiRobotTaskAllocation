@@ -6,15 +6,15 @@ MrtaInterface::MrtaInterface() {
 
 MrtaInterface::~MrtaInterface() {}
 
-void MrtaInterface::debugPrintCompleteConfig(
+void MrtaInterface::debugPrintConfigCompleteConfig(
     const MrtaConfig::CompleteConfig &mrta_complete_config) {
-  debugPrintSetup(mrta_complete_config.setup);
-  debugPrintTasksMap(mrta_complete_config.tasks_map);
-  debugPrintRobotsMap(mrta_complete_config.robots_map);
-  debugPrintEnvironment(mrta_complete_config.environment);
+  debugPrintConfigSetup(mrta_complete_config.setup);
+  debugPrintConfigTasksMap(mrta_complete_config.tasks_map);
+  debugPrintConfigRobotsMap(mrta_complete_config.robots_map);
+  debugPrintConfigEnvironment(mrta_complete_config.environment);
 }
 
-void MrtaInterface::debugPrintSetup(const MrtaConfig::Setup &mrta_setup) {
+void MrtaInterface::debugPrintConfigSetup(const MrtaConfig::Setup &mrta_setup) {
   int indent_level = NUMBER_OF_INDENTS_PER_LEVEL;
   std::cout << std::endl << "config.setup:" << std::endl;
   debugPrintSingleLine("number_of_robots", mrta_setup.number_of_robots,
@@ -52,7 +52,7 @@ void MrtaInterface::debugPrintSetup(const MrtaConfig::Setup &mrta_setup) {
   --indent_level;
 }
 
-void MrtaInterface::debugPrintTasksMap(
+void MrtaInterface::debugPrintConfigTasksMap(
     const std::map<std::string, MrtaConfig::Task> &mrta_task_map) {
   std::cout << std::endl << "config.task_map:" << std::endl;
   for (const auto &task : mrta_task_map) {
@@ -78,7 +78,7 @@ void MrtaInterface::debugPrintTasksMap(
   }
 }
 
-void MrtaInterface::debugPrintRobotsMap(
+void MrtaInterface::debugPrintConfigRobotsMap(
     const std::map<std::string, MrtaConfig::Robot> &mrta_robot_map) {
   std::cout << std::endl << "config.robot_map:" << std::endl;
   for (const auto &robot : mrta_robot_map) {
@@ -103,7 +103,7 @@ void MrtaInterface::debugPrintRobotsMap(
   }
 }
 
-void MrtaInterface::debugPrintEnvironment(
+void MrtaInterface::debugPrintConfigEnvironment(
     const MrtaConfig::Environment &mrta_environment) {
   std::cout << "config.environment" << std::endl;
 
@@ -141,7 +141,7 @@ bool MrtaInterface::healthCheckConfig(
 
   // Check if setup has mandatory fields
   health_ok = health_ok && healthCheckMandatoryFields(mrta_complete_config);
-  
+
   // Check if number of things in setup matches number of elements in maps
   health_ok = health_ok && healthCheckNumOfRobots(mrta_complete_config);
   health_ok = health_ok && healthCheckNumOfTasks(mrta_complete_config);

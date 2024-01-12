@@ -7,7 +7,7 @@ int main(int argc, char const *argv[])
   std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr = MrtaJsonParser::parseJsonFile("experiments/testing_setups/test_json_parser.json");
   MrtaInterface mrta_interface;
 
-  mrta_interface.debugPrintCompleteConfig(*mrta_config_ptr);
+  mrta_interface.debugPrintConfigCompleteConfig(*mrta_config_ptr);
   std::cout<<mrta_interface.healthCheckConfig(*mrta_config_ptr)<<std::endl;
 
   // mrta_interface.setMrtaSolverMethod(std::make_shared<MrtaMilpSolver>());

@@ -45,14 +45,16 @@ public:
     return solver_method->solveMrtaProblem();
   };
 
-  void debugPrintCompleteConfig(
+  void debugPrintConfigCompleteConfig(
       const MrtaConfig::CompleteConfig &mrta_complete_config);
-  void debugPrintSetup(const MrtaConfig::Setup &mrta_setup);
-  void debugPrintTasksMap(
+  void debugPrintConfigSetup(const MrtaConfig::Setup &mrta_setup);
+  void debugPrintConfigTasksMap(
       const std::map<std::string, MrtaConfig::Task> &mrta_task_map);
-  void debugPrintRobotsMap(
+  void debugPrintConfigRobotsMap(
       const std::map<std::string, MrtaConfig::Robot> &mrta_robot_map);
-  void debugPrintEnvironment(const MrtaConfig::Environment &mrta_environment);
+  void debugPrintConfigEnvironment(const MrtaConfig::Environment &mrta_environment);
+
+  void debugPrintSolution(const MrtaSolution::CompleteSolution& solution);
 
 private:
   std::shared_ptr<MrtaGenericSolver> solver_method;
