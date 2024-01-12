@@ -95,6 +95,12 @@ void MrtaInterface::debugPrintConfigRobotsMap(
     debugPrintSingleLine("pos_y", robot.second.position.pos_y, indent_level);
     --indent_level;
 
+    debugPrintSingleLine("desired_end_position", "", indent_level);
+    ++indent_level;
+    debugPrintSingleLine("pos_x", robot.second.desired_end_position.pos_x, indent_level);
+    debugPrintSingleLine("pos_y", robot.second.desired_end_position.pos_y, indent_level);
+    --indent_level;
+
     debugPrintSingleLine("skillset", "", indent_level);
     ++indent_level;
     for (const auto &skill : robot.second.skillset) {

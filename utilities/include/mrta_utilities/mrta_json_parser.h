@@ -32,8 +32,8 @@ private:
       "skill_degradation_rates";
 
   // Default values
-  inline const static bool default_use_robot_ends = true;
-  inline const static bool default_use_stochasticity = true;
+  inline const static bool default_use_robot_ends = false;
+  inline const static bool default_use_stochasticity = false;
   inline const static double default_epsilon = 0.95;
   inline const static double default_mean_percent = 10;
 

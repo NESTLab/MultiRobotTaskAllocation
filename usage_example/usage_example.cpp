@@ -6,7 +6,7 @@
 int main(int argc, char const *argv[]) {
   std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr =
       MrtaJsonParser::parseJsonFile(
-          "experiments/testing_setups/test_json_parser.json");
+          "usage_example/usage_example.json");
   MrtaInterface mrta_interface;
 
   mrta_interface.debugPrintConfigCompleteConfig(mrta_config_ptr);

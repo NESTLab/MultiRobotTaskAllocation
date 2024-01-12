@@ -259,9 +259,9 @@ void MrtaJsonParser::loadRobotsFromJson(
 
       // Retrieve and set the robot's location
       mrta_config_robot_current.position.pos_x =
-          double(current_robot_data.value()[json_pose]["x"]);
+          double(current_robot_data.value()[json_pos]["x"]);
       mrta_config_robot_current.position.pos_y =
-          double(current_robot_data.value()[json_pose]["y"]);
+          double(current_robot_data.value()[json_pos]["y"]);
 
       // Retrieve and set the robot's location
       mrta_config_robot_current.desired_end_position.pos_x =
