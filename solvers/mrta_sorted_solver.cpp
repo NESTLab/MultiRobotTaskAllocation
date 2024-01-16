@@ -11,7 +11,7 @@ MrtaSortedSolver::solveMrtaProblem() {
   solution.solution_quality.sum_of_all_robot_schedules = 80.0;
 
   int cycle_robot_ids = 0;
-  for (const auto &task_name : mrta_complete_config->setup.all_task_names) {
+  for (const auto &task_name : mrta_complete_config->setup.all_destination_names) {
     std::string robot_name =
         mrta_complete_config->setup.all_robot_names.at(cycle_robot_ids++);
     solution.robot_task_schedule_map[robot_name].robot_id = robot_name;

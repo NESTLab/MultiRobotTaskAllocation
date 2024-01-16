@@ -27,7 +27,7 @@
           },
           "skillset": {
             "0": 1,
-            "BATTERY": 1.0
+            "BATTERY": 91.0
           },
           "duration": 0.2
         },
@@ -38,7 +38,7 @@
           },
           "skillset": {
               "0": 1,
-              "BATTERY": 1.0
+              "BATTERY": 41.0
           },
           "duration": 0.2
       }

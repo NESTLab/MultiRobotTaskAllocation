@@ -31,6 +31,8 @@ private:
   inline const static std::string json_skill_degradation_rates =
       "skill_degradation_rates";
 
+  inline const static std::string START_TASK_NAME = "START";
+  inline const static std::string END_TASK_NAME = "END";
   // Default values
   inline const static bool default_use_robot_ends = false;
   inline const static bool default_use_stochasticity = false;

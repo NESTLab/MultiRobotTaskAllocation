@@ -22,7 +22,8 @@ MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
     loadSetupFromJson(json_data, mrta_config.setup);
     loadTasksFromJson(json_data, mrta_config.setup, mrta_config.tasks_map);
     loadRobotsFromJson(json_data, mrta_config.setup, mrta_config.robots_map);
-    loadSkillDegradationFromJson(json_data, mrta_config.setup, mrta_config.environment);
+    loadSkillDegradationFromJson(json_data, mrta_config.setup,
+                                 mrta_config.environment);
     // loadPathSigmas(json_data);
 
   } catch (const std::exception &e) {
@@ -31,7 +32,6 @@ MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
   }
   std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr =
       std::make_shared<MrtaConfig::CompleteConfig>(mrta_config);
-  std::cout<<"Number of robots at the source:"<<mrta_config_ptr->setup.number_of_robots<<std::endl;
   return mrta_config_ptr;
 }
 
@@ -77,15 +77,21 @@ void MrtaJsonParser::loadSetupFromJson(const json &json_data,
                                        MrtaConfig::Setup &mrta_config_setup) {
 
   mrta_config_setup.number_of_robots = json_data[json_setup][json_robots];
-  mrta_config_setup.number_of_tasks = json_data[json_setup][json_tasks];
-  // mrta_config_setup.number_of_tasks += 2;
+  mrta_config_setup.number_of_destinations =
+      (int)(json_data[json_setup][json_tasks]) + 1 // +1 FOR START TASK ID
+      + 1;                                         // +1 FOR END TASK ID
+
   mrta_config_setup.number_of_skills = json_data[json_setup][json_num_skills];
 
-  if (json_data[json_tasks].size() != mrta_config_setup.number_of_tasks) {
+  if (json_data[json_tasks].size() + 1 // +1 FOR START TASK ID
+          + 1                          // +1 FOR END TASK ID
+      != (mrta_config_setup.number_of_destinations)) {
     throw std::runtime_error(
-        "The number of tasks in 'setup' (" +
-        std::to_string(mrta_config_setup.number_of_tasks) +
-        ") does not match the length of the field 'tasks' (" +
+        "The number of number_of_destinations in 'setup' (" +
+        std::to_string(mrta_config_setup.number_of_destinations) +
+        ") must be 2 more than the number of tasks in the field 'tasks' to "
+        "include START and END places as destinations. Currently, the number "
+        "of given tasks are: (" +
         std::to_string(json_data[json_tasks].size()) + ")");
   }
   if (json_data[json_robots].size() != mrta_config_setup.number_of_robots) {
@@ -149,6 +155,10 @@ void MrtaJsonParser::loadTasksFromJson(
     std::map<std::string, MrtaConfig::Task> &mrta_config_task_map) {
   int current_task_index = 0;
   try {
+    // Add the START and END destination at the beginning.
+    mrta_config_setup.all_destination_names.push_back(START_TASK_NAME);
+    mrta_config_setup.all_destination_names.push_back(END_TASK_NAME);
+
     // Iterate over the tasks in the JSON data
     for (const auto &current_task_json_data : json_data[json_tasks].items()) {
 
@@ -156,7 +166,9 @@ void MrtaJsonParser::loadTasksFromJson(
       MrtaConfig::Task mrta_config_task_current;
       std::string task_name = current_task_json_data.key();
       mrta_config_task_current.task_name = task_name;
-      mrta_config_setup.all_task_names.push_back(task_name);
+      mrta_config_setup.all_destination_names.insert(
+          mrta_config_setup.all_destination_names.begin() + current_task_index,
+          task_name);
 
       // Retrieve and set the task's location
       mrta_config_task_current.position.pos_x =

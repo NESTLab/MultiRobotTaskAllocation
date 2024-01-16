@@ -8,7 +8,7 @@
 namespace MrtaConfig {
 struct Setup {
   int number_of_robots;
-  int number_of_tasks;
+  int number_of_destinations;
   int number_of_skills;
 
   double epsilon;
@@ -17,7 +17,7 @@ struct Setup {
   bool use_stochasticity;
   bool use_robot_ends;
 
-  std::vector<std::string> all_task_names;
+  std::vector<std::string> all_destination_names;
   std::vector<std::string> all_robot_names;
   std::vector<std::string> all_skill_names;
 };
