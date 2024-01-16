@@ -1,6 +1,7 @@
 add_library(mrta_solvers
   mrta_generic_solver.cpp
   mrta_sorted_solver.cpp
+  mrta_heuristic_solver.cpp
   # mrta_milp_solver.cpp
   )
 

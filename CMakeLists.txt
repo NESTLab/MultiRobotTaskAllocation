@@ -37,6 +37,11 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 find_package (nlohmann_json REQUIRED NO_MODULE)
 
+# (Should be Optional)
+find_package (Eigen3 REQUIRED)
+include_directories(${EIGEN_INCLUDE_DIR})
+
+# (Should be Optional)
 # set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # find_package(GUROBI REQUIRED)
 # include_directories(${GUROBI_INCLUDE_DIRS})
