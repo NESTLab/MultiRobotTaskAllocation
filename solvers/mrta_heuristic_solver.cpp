@@ -9,7 +9,7 @@ MrtaHeuristicSolver::solveMrtaProblem() {
   solver_config.phase_i_config.selection_list_config =
       SELECTION_LIST::MAX_SKILL;
   solver_config.phase_i_config.choosing_robot_task_pair_config =
-      CHOOSE_R_T_PAIR::NEAREST_PAIR;
+      CHOOSE_R_T_PAIR::SOONEST_PAIR;
   limited_info_mode = false;
   setHeuristicSolverConfig(solver_config);
 
@@ -38,6 +38,8 @@ void MrtaHeuristicSolver::initializeDistanceTensor() {
     robot_distances_vector.at(i) =
         Eigen::MatrixXd::Zero(number_of_destinations, number_of_destinations);
     putDistancesForRobot(i, robot_distances_vector.at(i));
+    std::cout << std::endl
+              << "Robot " << i << "'s distance array is:" << std::endl;
     debugPrintContributionArray(robot_distances_vector.at(i));
   }
 }
@@ -161,15 +163,51 @@ void MrtaHeuristicSolver::getChosenRobotTaskPair(
 
 void MrtaHeuristicSolver::getSoonestRobotTaskPair(
     const std::vector<std::pair<int, int>> &candidate_robot_task_id_pairs,
-    std::pair<int, int> &ret_chosen_robot_task_pair) {}
+    std::pair<int, int> &ret_chosen_robot_task_pair) {
+  double min_arrival_time = std::numeric_limits<double>::infinity();
+  for (const auto &robot_task_id_pair : candidate_robot_task_id_pairs) {
+    int robot_id = robot_task_id_pair.first;
+    int task_id = robot_task_id_pair.second;
+    int last_task_id = robot_last_task.at(robot_id);
+    double travel_dist =
+        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+    double last_task_start_time = task_start_time.at(last_task_id);
+    const std::string &last_task_name =
+        mrta_complete_config->setup.all_destination_names.at(task_id);
+    std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+        mrta_complete_config->tasks_map.find(last_task_name);
+    double last_task_exec_time = task_itr->second.duration;
+    double arrival_time =
+        last_task_start_time + last_task_exec_time + travel_dist;
+
+    if (arrival_time < min_arrival_time) {
+      min_arrival_time = arrival_time;
+      ret_chosen_robot_task_pair.first = robot_id;
+      ret_chosen_robot_task_pair.second = task_id;
+    }
+  }
+}
 
 void MrtaHeuristicSolver::getNearestRobotTaskPair(
     const std::vector<std::pair<int, int>> &candidate_robot_task_id_pairs,
-    std::pair<int, int> &ret_chosen_robot_task_pair) {}
+    std::pair<int, int> &ret_chosen_robot_task_pair) {
+  double min_travel_dist = std::numeric_limits<double>::infinity();
+  for (const auto &robot_task_id_pair : candidate_robot_task_id_pairs) {
+    int robot_id = robot_task_id_pair.first;
+    int task_id = robot_task_id_pair.second;
+    int last_task_id = robot_last_task.at(robot_id);
+    double travel_dist =
+        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+    if (travel_dist < min_travel_dist) {
+      min_travel_dist = travel_dist;
+      ret_chosen_robot_task_pair.first = robot_id;
+      ret_chosen_robot_task_pair.second = task_id;
+    }
+  }
+}
 
 void MrtaHeuristicSolver::debugPrintContributionArray(
     const Eigen::MatrixXd matrix) {
-  std::cout << "CONTRIBUTION ARRAY IS:" << std::endl;
   for (int i = 0; i < matrix.rows(); ++i) {
     for (int j = 0; j < matrix.cols(); ++j) {
       std::cout << matrix(i, j) << " - ";

@@ -54,8 +54,12 @@ private:
                             mrta_complete_config_in) {
     config_initialized = true;
     mrta_complete_config = mrta_complete_config_in;
-    END_ID = mrta_complete_config->setup.number_of_destinations-1;
+    END_ID = mrta_complete_config->setup.number_of_destinations - 1;
     initializeDistanceTensor();
+    robot_last_task = std::vector<int>(
+        mrta_complete_config->setup.number_of_robots, START_ID);
+    task_start_time = std::vector<double>(
+        mrta_complete_config->setup.number_of_destinations, 0.0);
   };
 
   bool config_initialized = false;
@@ -64,11 +68,15 @@ private:
   Eigen::MatrixXd contribution_array;
   std::vector<Eigen::MatrixXd> robot_distances_vector;
 
+  std::vector<int> robot_last_task;
+  std::vector<double> task_start_time;
+
   void updateWorldStatus(){};
 
   void initializeDistanceTensor();
 
-  void putDistancesForRobot(int robot_id, Eigen::MatrixXd &ret_i_distance_matrix);
+  void putDistancesForRobot(int robot_id,
+                            Eigen::MatrixXd &ret_i_distance_matrix);
   double getPureDistance(const MrtaConfig::Position &task_1_position,
                          const MrtaConfig::Position &task_2_position);
 
