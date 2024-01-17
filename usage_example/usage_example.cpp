@@ -1,6 +1,7 @@
 #include <mrta_interface/mrta_interface.h>
 #include <mrta_solvers/mrta_sorted_solver.h>
 #include <mrta_solvers/mrta_heuristic_solver.h>
+#include <mrta_solvers/mrta_sorted_solver.h>
 #include <mrta_utilities/mrta_json_parser.h>
 #include <mrta_utilities/mrta_json_writer.h>
 
@@ -27,10 +28,10 @@ int main(int argc, char const *argv[]) {
       mrta_interface.solveMrtaProblem(mrta_config_ptr);
 
   // Print and see what the result looks like
-  // mrta_interface.debugPrintSolution(solution);
+  mrta_interface.debugPrintSolution(solution);
 
   // Output the result to a json file
-  // MrtaJsonWriter::writeJsonFile(solution, "usage_example/solution_file.json");
+  MrtaJsonWriter::writeJsonFile(solution, "usage_example/solution_file.json");
 
   return 0;
 }

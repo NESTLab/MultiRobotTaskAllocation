@@ -19,14 +19,36 @@ MrtaHeuristicSolver::solveMrtaProblem() {
     updateContributionsFromConfig();
 
   // Phase 1: Select a pair of robot and tasks
-  std::pair<int, int> selected_robot_task_pair;
-  getSelectedRobotTaskPair(selected_robot_task_pair);
+  MrtaSolution::CompleteSolution solution;
+  while (contribution_array.any()) {
+    std::pair<int, int> selected_robot_task_pair;
+    getSelectedRobotTaskPair(selected_robot_task_pair);
+
+    const std::string &robot_name =
+        mrta_complete_config->setup.all_robot_names.at(
+            selected_robot_task_pair.first);
+    const std::string &task_name =
+        mrta_complete_config->setup.all_destination_names.at(
+            selected_robot_task_pair.second);
+
+    solution.robot_task_schedule_map[robot_name]
+        .task_attendance_sequence.push_back(task_name);
+
+    robot_task_id_attendance_sequence.at(selected_robot_task_pair.first)
+        .push_back(selected_robot_task_pair.second);
+
+    std::cout << local_tasks_map[task_name].skillset["BATTERY"] << std::endl;
+    for (auto &skill : mrta_complete_config->setup.all_skill_names) {
+      local_tasks_map[task_name].skillset[skill] = 0.0;
+    }
+    std::cout << local_tasks_map[task_name].skillset["BATTERY"] << std::endl;
+    updateContributionsFromConfig();
+  }
 
   // Phase 2: Select robots until the task satisfied
 
   // Delete superfluous robots
-  std::shared_ptr<const MrtaSolution::CompleteSolution> test;
-  return test;
+  return std::make_shared<const MrtaSolution::CompleteSolution>(solution);
 }
 
 void MrtaHeuristicSolver::initializeDistanceTensor() {
@@ -134,8 +156,10 @@ void MrtaHeuristicSolver::getRobotTaskPairsWithMaxContributions(
 void MrtaHeuristicSolver::getRequiredRobotTaskWithContributionsAboveThreshold(
     double threshold,
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
-  Eigen::MatrixXi mask = contribution_array.array().unaryExpr(
-      [threshold](double val) { return val >= threshold ? 1 : 0; });
+  Eigen::MatrixXi mask =
+      contribution_array.array().unaryExpr([threshold](double val) {
+        return (val >= threshold && val > 0.0) ? 1 : 0;
+      });
   for (int i = 0; i < mask.rows(); ++i) {
     for (int j = 0; j < mask.cols(); ++j) {
       if (mask(i, j)) {
@@ -168,7 +192,7 @@ void MrtaHeuristicSolver::getSoonestRobotTaskPair(
   for (const auto &robot_task_id_pair : candidate_robot_task_id_pairs) {
     int robot_id = robot_task_id_pair.first;
     int task_id = robot_task_id_pair.second;
-    int last_task_id = robot_last_task.at(robot_id);
+    int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
     double travel_dist =
         robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
     double last_task_start_time = task_start_time.at(last_task_id);
@@ -195,7 +219,7 @@ void MrtaHeuristicSolver::getNearestRobotTaskPair(
   for (const auto &robot_task_id_pair : candidate_robot_task_id_pairs) {
     int robot_id = robot_task_id_pair.first;
     int task_id = robot_task_id_pair.second;
-    int last_task_id = robot_last_task.at(robot_id);
+    int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
     double travel_dist =
         robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
     if (travel_dist < min_travel_dist) {
@@ -237,14 +261,15 @@ void MrtaHeuristicSolver::updateContributionsFromConfig() {
         std::map<std::string, MrtaConfig::Robot>::const_iterator
             robot_info_itr = mrta_complete_config->robots_map.find(robot_name);
         std::map<std::string, MrtaConfig::Task>::const_iterator task_info_itr =
-            mrta_complete_config->tasks_map.find(task_name);
+            local_tasks_map.find(task_name);
 
         std::map<std::string, double>::const_iterator robot_skill_itr =
             robot_info_itr->second.skillset.find(skill_name);
         std::map<std::string, double>::const_iterator task_skill_itr =
             task_info_itr->second.skillset.find(skill_name);
 
-        if (robot_skill_itr->second >= task_skill_itr->second)
+        if (robot_skill_itr->second >= task_skill_itr->second &&
+            task_skill_itr->second > 0.0)
           ++contribution_array(i, j);
       }
     }
