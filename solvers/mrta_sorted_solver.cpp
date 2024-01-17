@@ -11,20 +11,22 @@ MrtaSortedSolver::solveMrtaProblem() {
   solution.solution_quality.sum_of_all_robot_schedules = 80.0;
 
   int cycle_robot_ids = 0;
-  for (const auto &task_name : mrta_complete_config->setup.all_destination_names) {
+  for (size_t j = 1; j < mrta_complete_config->setup.number_of_destinations - 1;
+       j++) {
     std::string robot_name =
         mrta_complete_config->setup.all_robot_names.at(cycle_robot_ids++);
     solution.robot_task_schedule_map[robot_name].robot_id = robot_name;
 
-    std::map<std::string, int> &robot_task_seq_map =
-        solution.robot_task_schedule_map[robot_name].task_sequence_map;
+    std::vector<std::string> &robot_task_seq_vec =
+        solution.robot_task_schedule_map[robot_name].task_attendance_sequence;
 
-    robot_task_seq_map[task_name] = robot_task_seq_map.size() + 1;
- 
+    const std::string &task_name = mrta_complete_config->setup.all_destination_names.at(j);
+    robot_task_seq_vec.push_back(task_name);
+
     solution.robot_task_schedule_map[robot_name]
-        .task_arrival_time_map[task_name] = 10 * robot_task_seq_map.size();
+        .task_arrival_time_map[task_name] = 10 * robot_task_seq_vec.size();
 
-    if (cycle_robot_ids==mrta_complete_config->setup.number_of_robots) 
+    if (cycle_robot_ids == mrta_complete_config->setup.number_of_robots)
       cycle_robot_ids = 0;
   }
 

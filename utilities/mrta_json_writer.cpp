@@ -38,9 +38,11 @@ json MrtaJsonWriter::addRobotSchedulesToJson(
   json schedule_json;
   for (const auto &robot_schedule : solution_quality) {
     schedule_json[robot_schedule.first][json_robot_id] = robot_schedule.first;
-    for (const auto &task : robot_schedule.second.task_sequence_map) {
-      schedule_json[robot_schedule.first][json_task_sequence_map][task.first] =
-          task.second;
+    for (size_t j = 0;
+         j < robot_schedule.second.task_attendance_sequence.size(); j++) {
+      std::string task_name =
+          robot_schedule.second.task_attendance_sequence.at(j);
+      schedule_json[robot_schedule.first][json_task_sequence_map][std::to_string(j)] = task_name;
     }
     for (const auto &task : robot_schedule.second.task_arrival_time_map) {
       schedule_json[robot_schedule.first][json_task_arrival_time_map]

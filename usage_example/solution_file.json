@@ -6,7 +6,7 @@
                 "task_0": 10.0
             },
             "task_sequence_map": {
-                "task_0": 1
+                "0": "task_0"
             }
         },
         "robot_1": {
@@ -15,7 +15,7 @@
                 "task_1": 10.0
             },
             "task_sequence_map": {
-                "task_1": 1
+                "0": "task_1"
             }
         },
         "robot_2": {
@@ -24,7 +24,7 @@
                 "task_2": 10.0
             },
             "task_sequence_map": {
-                "task_2": 1
+                "0": "task_2"
             }
         }
     },

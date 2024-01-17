@@ -152,10 +152,10 @@ void MrtaInterface::debugPrintSolutionSchedule(
     ++indent_level;
     debugPrintSingleLine("robot_id", robot.second.robot_id, indent_level);
 
-    debugPrintSingleLine("task_sequence_map", "", indent_level);
+    debugPrintSingleLine("task_attendance_sequence", "", indent_level);
 
     ++indent_level;
-    debugPrintSolutionTaskMap(robot.second.task_sequence_map, indent_level);
+    debugPrintSolutionTaskVec(robot.second.task_attendance_sequence, indent_level);
     --indent_level;
 
     debugPrintSingleLine("task_arrival_time_map", "", indent_level);
@@ -163,6 +163,13 @@ void MrtaInterface::debugPrintSolutionSchedule(
     ++indent_level;
     debugPrintSolutionTaskMap(robot.second.task_arrival_time_map, indent_level);
     --indent_level;
+  }
+}
+
+void MrtaInterface::debugPrintSolutionTaskVec(
+    const std::vector<std::string> &task_seq_vec, int indent_level) {
+  for (size_t j = 0; j < task_seq_vec.size(); j++){
+    debugPrintSingleLine(std::to_string(j), task_seq_vec.at(j), indent_level);
   }
 }
 

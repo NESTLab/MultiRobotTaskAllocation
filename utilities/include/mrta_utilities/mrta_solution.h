@@ -25,7 +25,7 @@ namespace MrtaSolution
   struct RobotTasksSchedule {
     std::string robot_id;
 
-    std::map<std::string, int> task_sequence_map;
+    std::vector<std::string> task_attendance_sequence;
     std::map<std::string, float> task_arrival_time_map;
   };
 

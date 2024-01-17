@@ -77,6 +77,9 @@ private:
   template <typename T>
   void debugPrintSolutionTaskMap(const std::map<std::string, T> task_map, int indent_level = 0);
 
+ 
+  void debugPrintSolutionTaskVec(const std::vector<std::string> &task_seq_vec, int indent_level = 0);
+
   template <typename T>
   bool healthCheckField(const std::string &field, const T &value);
   bool healthCheckNumOfElements(const std::string &item,
