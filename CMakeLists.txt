@@ -59,3 +59,17 @@ add_subdirectory(utilities)
 add_subdirectory(interface)
 add_subdirectory(solvers)
 add_subdirectory(usage_example)
+
+install(TARGETS mrta_utilities mrta_interface mrta_solvers
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+# Specify the headers to be installed
+install(DIRECTORY utilities/include/ DESTINATION include)
+install(DIRECTORY interface/include/ DESTINATION include)
+install(DIRECTORY solvers/include/ DESTINATION include)
+
+install(FILES ${CMAKE_CURRENT_LIST_DIR}/cmake/mrta_cppConfig.cmake DESTINATION share/mrta_cpp/cmake)
+
