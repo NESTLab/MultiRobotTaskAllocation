@@ -1,4 +1,4 @@
-add_library(mrta_utilities
+add_library(mrta_utilities SHARED
   mrta_json_parser.cpp
   mrta_json_writer.cpp
   )

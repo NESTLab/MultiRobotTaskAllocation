@@ -1,33 +1,82 @@
+# .rst:
+# CRA_CAFConfig
+# --------
+#
+# Find Module for CRA CAF
+#
+# This modules finds if CRA CAF is installed and determines where the
+# tools, include files and libraries are.
+#
+# This module set the following result variables:
+#
+# ::
+#
+#   MRTA_CPP_LIBRARY     = The full path of the MRTA_CPP library
+#   MRTA_CPP_INCLUDE_DIR = The full path to the .h include files
+#
+# Examples Usages:
+#
+# ::
+#
+#   find_package(MRTA_CPP)
+#   if(MRTA_CPP_FOUND)
+#     includee_directories(${MRTA_CPP_INCLUDE_DIR})
+#     ...
+#     target_link_libraries(... ${MRTA_CPP_LIBRARY})
+#   endif(MRTA_CPP_FOUND)
+#
+#   find_package(MRTA_CPP REQUIRED)
+#   include_directories(${MRTA_CPP_INCLUDE_DIR})
+#   ...
+#   target_link_libraries(... ${MRTA_CPP_LIBRARY})
 
-####### Expanded from @PACKAGE_INIT@ by configure_package_config_file() #######
-####### Any changes to this file will be overwritten by the next CMake run ####
-####### The input file was mrta_cppConfig.cmake.in                            ########
 
-get_filename_component(PACKAGE_PREFIX_DIR "${CMAKE_CURRENT_LIST_DIR}/../../usr/local" ABSOLUTE)
+#
+# Standard MRTA-CPP library paths
+#
+set(_MRTA_CPP_LIBRARY_PATHS
+  /usr/lib
+  /usr/local/lib
+  /opt/lib
+  /opt/local/lib)
 
-macro(set_and_check _var _file)
-  set(${_var} "${_file}")
-  if(NOT EXISTS "${_file}")
-    message(FATAL_ERROR "File or directory ${_file} referenced by variable ${_var} does not exist !")
-  endif()
-endmacro()
+#
+# Standard MRTA-CPP C include paths
+#
+set(_MRTA_CPP_INCLUDE_PATHS
+  /usr/include
+  /usr/local/include
+  /opt/include
+  /opt/local/include)
 
-macro(check_required_components _NAME)
-  foreach(comp ${${_NAME}_FIND_COMPONENTS})
-    if(NOT ${_NAME}_${comp}_FOUND)
-      if(${_NAME}_FIND_REQUIRED_${comp})
-        set(${_NAME}_FOUND FALSE)
-      endif()
-      message(STATUS "${_NAME} library NOT found")
-    else(NOT ${_NAME}_${comp}_FOUND)
-      message(STATUS "${_NAME} library found: ${${_NAME}_LIBRARY}")
-    endif()
-  endforeach()
-endmacro()
+#
+# Look for MRTA-CPP library
+#
+find_library(MRTA_CPP_LIBRARY
+  NAMES mrta_utilities
+  PATHS ${_MRTA_CPP_LIBRARY_PATHS}
+  DOC "Location of the MRTA-CPP library")
 
-####################################################################################
+#
+# Look for MRTA-CPP include files
+#
+find_path(MRTA_CPP_INCLUDE_DIR
+  NAMES mrta_utilities/mrta_config.h
+  PATHS ${_MRTA_CPP_INCLUDE_PATHS}
+  DOC "Location of the MRTA-CPP C include files")
 
-# Include directories for the library
-set(mrta_cpp_INCLUDE_DIRS
-    /usr/local/include
-)
+set(MRTA_CPP_FOUND 0)
+if(MRTA_CPP_LIBRARY AND MRTA_CPP_INCLUDE_DIR)
+  set(MRTA_CPP_FOUND 1)
+endif(MRTA_CPP_LIBRARY AND MRTA_CPP_INCLUDE_DIR)
+if(NOT QUIET)
+  if(MRTA_CPP_FOUND)
+    message(STATUS "MRTA-CPP library found: ${MRTA_CPP_LIBRARY}")
+    message(STATUS "MRTA-CPP headers include path found: ${MRTA_CPP_INCLUDE_DIR}")
+  else(MRTA_CPP_FOUND)
+    message(STATUS "MRTA-CPP not found")
+  endif(MRTA_CPP_FOUND)
+endif(NOT QUIET)
+set(MRTA_CPP_FOUND ${MRTA_CPP_FOUND} CACHE BOOL "Whether MRTA-CPP was found")
+
+mark_as_advanced(MRTA_CPP_LIBRARY MRTA_CPP_INCLUDE_DIR)
