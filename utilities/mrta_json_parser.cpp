@@ -4,35 +4,32 @@
  * @brief Constructs a new Config object.
  * @param json_file_name The name of the JSON file to load configurations from.
  */
-std::shared_ptr<const MrtaConfig::CompleteConfig> const
-MrtaJsonParser::parseJsonFile(const std::string &json_file_name) {
-
-  MrtaConfig::CompleteConfig mrta_config;
+void MrtaJsonParser::parseJsonFile(
+    const std::string &json_file_name,
+    MrtaConfig::CompleteConfig &ret_complete_config) {
 
   try {
     std::ifstream file(json_file_name);
     if (!file.is_open()) {
       std::cerr << "Failed to open JSON file." << std::endl;
-      return (std::make_shared<MrtaConfig::CompleteConfig>(mrta_config));
     }
     json json_data;
     file >> json_data;
     file.close();
 
-    loadSetupFromJson(json_data, mrta_config.setup);
-    loadTasksFromJson(json_data, mrta_config.setup, mrta_config.tasks_map);
-    loadRobotsFromJson(json_data, mrta_config.setup, mrta_config.robots_map);
-    loadSkillDegradationFromJson(json_data, mrta_config.setup,
-                                 mrta_config.environment);
+    loadSetupFromJson(json_data, ret_complete_config.setup);
+    loadTasksFromJson(json_data, ret_complete_config.setup,
+                      ret_complete_config.tasks_map);
+    loadRobotsFromJson(json_data, ret_complete_config.setup,
+                       ret_complete_config.robots_map);
+    loadSkillDegradationFromJson(json_data, ret_complete_config.setup,
+                                 ret_complete_config.environment);
     // loadPathSigmas(json_data);
 
   } catch (const std::exception &e) {
     throw std::runtime_error("Error while loading data from json file. " +
                              std::string(e.what()));
   }
-  std::shared_ptr<MrtaConfig::CompleteConfig> mrta_config_ptr =
-      std::make_shared<MrtaConfig::CompleteConfig>(mrta_config);
-  return mrta_config_ptr;
 }
 
 /**

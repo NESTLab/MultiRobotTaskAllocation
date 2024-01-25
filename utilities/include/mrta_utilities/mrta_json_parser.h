@@ -9,9 +9,7 @@ public:
   MrtaJsonParser(){};
   ~MrtaJsonParser(){};
 
-  // static const MrtaConfig& MrtaJsonParser(const std::string& json_file_name);
-  static std::shared_ptr<const MrtaConfig::CompleteConfig> const 
-  parseJsonFile(const std::string &json_file_name);
+  static void parseJsonFile(const std::string &json_file_name, MrtaConfig::CompleteConfig& ret_complete_config);
 
 private:
   // JSON field names
@@ -21,7 +19,8 @@ private:
   inline const static std::string json_num_skills = "num_skills";
   inline const static std::string json_pos = "pos";
   inline const static std::string json_pose = "pose";
-  inline const static std::string json_desired_end_position = "desired_end_position";
+  inline const static std::string json_desired_end_position =
+      "desired_end_position";
   inline const static std::string json_duration = "duration";
   inline const static std::string json_skillset = "skillset";
   inline const static std::string json_epsilon = "epsilon";

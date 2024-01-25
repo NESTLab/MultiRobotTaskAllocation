@@ -2,15 +2,15 @@
 #include <mrta_utilities/mrta_json_writer.h>
 
 void MrtaJsonWriter::writeJsonFile(
-    std::shared_ptr<const MrtaSolution::CompleteSolution> const solution,
+    const MrtaSolution::CompleteSolution &solution,
     const std::string &output_file) {
   json json_file;
 
   json_file[json_robots_schedule] =
-      addRobotSchedulesToJson(solution->robot_task_schedule_map);
+      addRobotSchedulesToJson(solution.robot_task_schedule_map);
 
   json_file[json_solution_quality] =
-      addQualityValuesToJson(solution->solution_quality);
+      addQualityValuesToJson(solution.solution_quality);
 
   // Write the JSON to a file
   std::ofstream file(output_file);

@@ -10,9 +10,8 @@ public:
   ~MrtaJsonWriter(){};
 
   // static const MrtaConfig& MrtaJsonWriter(const std::string& json_file_name);
-  static void writeJsonFile(
-      std::shared_ptr<const MrtaSolution::CompleteSolution> const solution,
-      const std::string &output_file);
+  static void writeJsonFile(const MrtaSolution::CompleteSolution &solution,
+                            const std::string &output_file);
 
 private:
   // JSON field names
