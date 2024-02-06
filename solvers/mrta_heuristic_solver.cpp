@@ -35,11 +35,9 @@ void MrtaHeuristicSolver::solveMrtaProblem(
     robot_task_id_attendance_sequence.at(selected_robot_task_pair.first)
         .push_back(selected_robot_task_pair.second);
 
-    std::cout << local_tasks_map[task_name].skillset["BATTERY"] << std::endl;
     for (auto &skill : mrta_complete_config.setup.all_skill_names) {
       local_tasks_map[task_name].skillset[skill] = 0.0;
     }
-    std::cout << local_tasks_map[task_name].skillset["BATTERY"] << std::endl;
     updateContributionsFromConfig();
   }
 
@@ -57,9 +55,6 @@ void MrtaHeuristicSolver::initializeDistanceTensor() {
     robot_distances_vector.at(i) =
         Eigen::MatrixXd::Zero(number_of_destinations, number_of_destinations);
     putDistancesForRobot(i, robot_distances_vector.at(i));
-    std::cout << std::endl
-              << "Robot " << i << "'s distance array is:" << std::endl;
-    debugPrintContributionArray(robot_distances_vector.at(i));
   }
 }
 
@@ -271,9 +266,4 @@ void MrtaHeuristicSolver::updateContributionsFromConfig() {
       }
     }
   }
-  std::cout << "=================================================="
-            << std::endl;
-  debugPrintContributionArray(contribution_array);
-  std::cout << "=================================================="
-            << std::endl;
 }
