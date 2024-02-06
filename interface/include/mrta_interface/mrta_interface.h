@@ -22,8 +22,8 @@ public:
   // To check and print if all the essential fields are present in the config
   // Return false if mandatory field is missing
   // Also print which optional fields are provided and which are missing
-  bool healthCheckConfig(const std::shared_ptr<const MrtaConfig::CompleteConfig>
-                             mrta_complete_config);
+  bool
+  healthCheckConfig(const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   // This is strictly to be used by DECENTRALIZED solvers.
   // This will update what tasks have been already attended, which robot is
@@ -40,16 +40,26 @@ public:
   // In that case, communicating data with other robots, updating the world
   // status
   //    and keeping track of convergence will be up to the user.
-  std::shared_ptr<const MrtaSolution::CompleteSolution> const
-  solveMrtaProblem(std::shared_ptr<const MrtaConfig::CompleteConfig> const
-                       mrta_complete_config) {
+  void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                        MrtaSolution::CompleteSolution &ret_complete_solution) {
     solver_method->updateMrtaConfig(mrta_complete_config);
-    return solver_method->solveMrtaProblem();
+    solver_method->solveMrtaProblem(mrta_complete_config, ret_complete_solution);
+  };
+
+  /**
+   * @brief Set the Limited Info Mode object
+   * Defines if this solver is being used by the CAF methods. If that is the
+   * case, then the skill matrix calculation should be skipped and should be
+   * taken as an input from the user.
+   *
+   * @param limited_info_mode_in
+   */
+  inline void setLimitedInfoMode(bool limited_info_mode_in) {
+    solver_method->setLimitedInfoMode(limited_info_mode_in);
   };
 
   void debugPrintConfigCompleteConfig(
-      const std::shared_ptr<const MrtaConfig::CompleteConfig>
-          mrta_complete_config);
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
   void debugPrintConfigSetup(const MrtaConfig::Setup &mrta_setup);
   void debugPrintConfigTasksMap(
       const std::map<std::string, MrtaConfig::Task> &mrta_task_map);
@@ -59,7 +69,7 @@ public:
   debugPrintConfigEnvironment(const MrtaConfig::Environment &mrta_environment);
 
   void debugPrintSolution(
-      std::shared_ptr<const MrtaSolution::CompleteSolution> const solution);
+      const MrtaSolution::CompleteSolution& solution);
 
   void debugPrintSolutionSchedule(
       const std::map<std::string, MrtaSolution::RobotTasksSchedule>
@@ -73,12 +83,13 @@ private:
   template <typename T>
   void debugPrintSingleLine(const std::string &field, const T &value,
                             int number_of_indents);
-  
-  template <typename T>
-  void debugPrintSolutionTaskMap(const std::map<std::string, T> task_map, int indent_level = 0);
 
- 
-  void debugPrintSolutionTaskVec(const std::vector<std::string> &task_seq_vec, int indent_level = 0);
+  template <typename T>
+  void debugPrintSolutionTaskMap(const std::map<std::string, T> task_map,
+                                 int indent_level = 0);
+
+  void debugPrintSolutionTaskVec(const std::vector<std::string> &task_seq_vec,
+                                 int indent_level = 0);
 
   template <typename T>
   bool healthCheckField(const std::string &field, const T &value);
@@ -86,14 +97,11 @@ private:
                                 const std::string &item_detail,
                                 int expected_count, int received_count);
   bool healthCheckMandatoryFields(
-      const std::shared_ptr<const MrtaConfig::CompleteConfig>
-          mrta_complete_config);
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
+  bool healthCheckNumOfRobots(
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
   bool
-  healthCheckNumOfRobots(const std::shared_ptr<const MrtaConfig::CompleteConfig>
-                             mrta_complete_config);
-  bool
-  healthCheckNumOfTasks(const std::shared_ptr<const MrtaConfig::CompleteConfig>
-                            mrta_complete_config);
+  healthCheckNumOfTasks(const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
   const int NUMBER_OF_DASHES_PER_INDENT = 3;

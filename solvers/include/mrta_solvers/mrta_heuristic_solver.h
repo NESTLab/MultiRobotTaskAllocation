@@ -30,34 +30,22 @@ public:
     heuristic_method_config = req_config;
   }
 
-  /**
-   * @brief Set the Limited Info Mode object
-   * Defines if this solver is being used by the CRA methods. If that is the
-   * case, then the skill matrix calculation should be skipped and should be
-   * taken as an input from the user.
-   *
-   * @param limited_info_mode_in
-   */
-  void setLimitedInfoMode(bool limited_info_mode_in) {
-    limited_info_mode = limited_info_mode_in;
-  }
-
 private:
-  bool limited_info_mode = false;
   int START_ID = 0;
   int END_ID = 0;
   HEURISTIC_SOLVER_CONFIG heuristic_method_config;
-  std::shared_ptr<const MrtaSolution::CompleteSolution> const
-  solveMrtaProblem();
+  void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                        MrtaSolution::CompleteSolution &ret_complete_solution);
 
-  void updateMrtaConfig(const std::shared_ptr<const MrtaConfig::CompleteConfig>
-                            mrta_complete_config_in) {
+  void
+  updateMrtaConfig(const MrtaConfig::CompleteConfig &mrta_complete_config_in) {
     config_initialized = true;
-    mrta_complete_config = mrta_complete_config_in;
+    mrta_complete_config = &mrta_complete_config_in;
     END_ID = mrta_complete_config->setup.number_of_destinations - 1;
-    robot_task_id_attendance_sequence.resize(mrta_complete_config->setup.number_of_robots);
-    for(auto &robot_task_att : robot_task_id_attendance_sequence){
-      robot_task_att = std::vector<int>(1,START_ID);
+    robot_task_id_attendance_sequence.resize(
+        mrta_complete_config->setup.number_of_robots);
+    for (auto &robot_task_att : robot_task_id_attendance_sequence) {
+      robot_task_att = std::vector<int>(1, START_ID);
     }
     initializeDistanceTensor();
     task_start_time = std::vector<double>(
@@ -66,7 +54,7 @@ private:
   };
 
   bool config_initialized = false;
-  std::shared_ptr<const MrtaConfig::CompleteConfig> mrta_complete_config;
+  MrtaConfig::CompleteConfig const * mrta_complete_config;
 
   Eigen::MatrixXd contribution_array;
   std::vector<Eigen::MatrixXd> robot_distances_vector;

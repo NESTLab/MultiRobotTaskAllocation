@@ -7,14 +7,15 @@ public:
   ~MrtaSortedSolver(){};
 
 private:
-  std::shared_ptr<const MrtaSolution::CompleteSolution> const solveMrtaProblem();
+  void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                        MrtaSolution::CompleteSolution &ret_complete_solution);
 
-  void updateMrtaConfig(const std::shared_ptr<const MrtaConfig::CompleteConfig> mrta_complete_config_in) {
-    mrta_complete_config = mrta_complete_config_in;
+  void updateMrtaConfig(const MrtaConfig::CompleteConfig& mrta_complete_config_in) {
+    mrta_complete_config = &mrta_complete_config_in;
   };
 
   void updateWorldStatus(){};
 
 private:
-  std::shared_ptr<const MrtaConfig::CompleteConfig> mrta_complete_config;
+  MrtaConfig::CompleteConfig const * mrta_complete_config;
 };

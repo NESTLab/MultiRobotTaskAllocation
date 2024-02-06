@@ -7,7 +7,8 @@ public:
   MrtaMilpSolver(/* args */){};
   ~MrtaMilpSolver(){};
 
-  std::shared_ptr<MrtaSolution::CompleteSolution> solveMrtaProblem();
+  void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                        MrtaSolution::CompleteSolution &ret_complete_solution);
 
   bool setMrtaConfig(const MrtaConfig &config_object_in) {
     config_object = &config_object_in;

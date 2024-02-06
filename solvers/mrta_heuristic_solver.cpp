@@ -1,16 +1,15 @@
 #include <limits>
 #include <mrta_solvers/mrta_heuristic_solver.h>
 
-std::shared_ptr<const MrtaSolution::CompleteSolution> const
-MrtaHeuristicSolver::solveMrtaProblem() {
-
+void MrtaHeuristicSolver::solveMrtaProblem(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
+    MrtaSolution::CompleteSolution &ret_complete_solution) {
   // TESTING TESTING TESTING
   HEURISTIC_SOLVER_CONFIG solver_config;
   solver_config.phase_i_config.selection_list_config =
       SELECTION_LIST::MAX_SKILL;
   solver_config.phase_i_config.choosing_robot_task_pair_config =
       CHOOSE_R_T_PAIR::SOONEST_PAIR;
-  limited_info_mode = false;
   setHeuristicSolverConfig(solver_config);
 
   if (limited_info_mode)
@@ -19,26 +18,25 @@ MrtaHeuristicSolver::solveMrtaProblem() {
     updateContributionsFromConfig();
 
   // Phase 1: Select a pair of robot and tasks
-  MrtaSolution::CompleteSolution solution;
   while (contribution_array.any()) {
     std::pair<int, int> selected_robot_task_pair;
     getSelectedRobotTaskPair(selected_robot_task_pair);
 
     const std::string &robot_name =
-        mrta_complete_config->setup.all_robot_names.at(
+        mrta_complete_config.setup.all_robot_names.at(
             selected_robot_task_pair.first);
     const std::string &task_name =
-        mrta_complete_config->setup.all_destination_names.at(
+        mrta_complete_config.setup.all_destination_names.at(
             selected_robot_task_pair.second);
 
-    solution.robot_task_schedule_map[robot_name]
+    ret_complete_solution.robot_task_schedule_map[robot_name]
         .task_attendance_sequence.push_back(task_name);
 
     robot_task_id_attendance_sequence.at(selected_robot_task_pair.first)
         .push_back(selected_robot_task_pair.second);
 
     std::cout << local_tasks_map[task_name].skillset["BATTERY"] << std::endl;
-    for (auto &skill : mrta_complete_config->setup.all_skill_names) {
+    for (auto &skill : mrta_complete_config.setup.all_skill_names) {
       local_tasks_map[task_name].skillset[skill] = 0.0;
     }
     std::cout << local_tasks_map[task_name].skillset["BATTERY"] << std::endl;
@@ -48,7 +46,6 @@ MrtaHeuristicSolver::solveMrtaProblem() {
   // Phase 2: Select robots until the task satisfied
 
   // Delete superfluous robots
-  return std::make_shared<const MrtaSolution::CompleteSolution>(solution);
 }
 
 void MrtaHeuristicSolver::initializeDistanceTensor() {

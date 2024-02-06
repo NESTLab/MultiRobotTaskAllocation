@@ -7,12 +7,11 @@ MrtaInterface::MrtaInterface() {
 MrtaInterface::~MrtaInterface() {}
 
 void MrtaInterface::debugPrintConfigCompleteConfig(
-    const std::shared_ptr<const MrtaConfig::CompleteConfig>
-        mrta_complete_config) {
-  debugPrintConfigSetup(mrta_complete_config->setup);
-  debugPrintConfigTasksMap(mrta_complete_config->tasks_map);
-  debugPrintConfigRobotsMap(mrta_complete_config->robots_map);
-  debugPrintConfigEnvironment(mrta_complete_config->environment);
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  debugPrintConfigSetup(mrta_complete_config.setup);
+  debugPrintConfigTasksMap(mrta_complete_config.tasks_map);
+  debugPrintConfigRobotsMap(mrta_complete_config.robots_map);
+  debugPrintConfigEnvironment(mrta_complete_config.environment);
 }
 
 void MrtaInterface::debugPrintConfigSetup(const MrtaConfig::Setup &mrta_setup) {
@@ -134,10 +133,10 @@ void MrtaInterface::debugPrintConfigEnvironment(
 }
 
 void MrtaInterface::debugPrintSolution(
-    std::shared_ptr<const MrtaSolution::CompleteSolution> const solution) {
+    const MrtaSolution::CompleteSolution& solution) {
   std::cout << std::endl << "Printing Solution:" << std::endl;
-  debugPrintSolutionQuality(solution->solution_quality);
-  debugPrintSolutionSchedule(solution->robot_task_schedule_map);
+  debugPrintSolutionQuality(solution.solution_quality);
+  debugPrintSolutionSchedule(solution.robot_task_schedule_map);
 }
 
 void MrtaInterface::debugPrintSolutionSchedule(
@@ -155,7 +154,8 @@ void MrtaInterface::debugPrintSolutionSchedule(
     debugPrintSingleLine("task_attendance_sequence", "", indent_level);
 
     ++indent_level;
-    debugPrintSolutionTaskVec(robot.second.task_attendance_sequence, indent_level);
+    debugPrintSolutionTaskVec(robot.second.task_attendance_sequence,
+                              indent_level);
     --indent_level;
 
     debugPrintSingleLine("task_arrival_time_map", "", indent_level);
@@ -168,7 +168,7 @@ void MrtaInterface::debugPrintSolutionSchedule(
 
 void MrtaInterface::debugPrintSolutionTaskVec(
     const std::vector<std::string> &task_seq_vec, int indent_level) {
-  for (size_t j = 0; j < task_seq_vec.size(); j++){
+  for (size_t j = 0; j < task_seq_vec.size(); j++) {
     debugPrintSingleLine(std::to_string(j), task_seq_vec.at(j), indent_level);
   }
 }
@@ -211,8 +211,7 @@ void MrtaInterface::debugPrintSingleLine(const std::string &field,
 }
 
 bool MrtaInterface::healthCheckConfig(
-    const std::shared_ptr<const MrtaConfig::CompleteConfig>
-        mrta_complete_config) {
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
   bool health_ok = true;
 
   // Check if setup has mandatory fields
@@ -226,53 +225,50 @@ bool MrtaInterface::healthCheckConfig(
 }
 
 bool MrtaInterface::healthCheckMandatoryFields(
-    const std::shared_ptr<const MrtaConfig::CompleteConfig>
-        mrta_complete_config) {
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
   bool health_ok = true;
   health_ok = health_ok &&
               healthCheckField("number_of_robots",
-                               mrta_complete_config->setup.number_of_robots);
+                               mrta_complete_config.setup.number_of_robots);
   health_ok =
       health_ok &&
       healthCheckField("number_of_destinations",
-                       mrta_complete_config->setup.number_of_destinations);
+                       mrta_complete_config.setup.number_of_destinations);
   health_ok = health_ok &&
               healthCheckField("number_of_skills",
-                               mrta_complete_config->setup.number_of_skills);
+                               mrta_complete_config.setup.number_of_skills);
 
   return health_ok;
 }
 bool MrtaInterface::healthCheckNumOfRobots(
-    const std::shared_ptr<const MrtaConfig::CompleteConfig>
-        mrta_complete_config) {
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
   bool health_ok = true;
   health_ok =
       health_ok && healthCheckNumOfElements(
                        "robots", "config.setup.all_robot_names",
-                       mrta_complete_config->setup.number_of_robots,
-                       mrta_complete_config->setup.all_robot_names.size());
+                       mrta_complete_config.setup.number_of_robots,
+                       mrta_complete_config.setup.all_robot_names.size());
   health_ok = health_ok && healthCheckNumOfElements(
                                "robots", "config.robots_map",
-                               mrta_complete_config->setup.number_of_robots,
-                               mrta_complete_config->robots_map.size());
+                               mrta_complete_config.setup.number_of_robots,
+                               mrta_complete_config.robots_map.size());
 
   return health_ok;
 }
 bool MrtaInterface::healthCheckNumOfTasks(
-    const std::shared_ptr<const MrtaConfig::CompleteConfig>
-        mrta_complete_config) {
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
   bool health_ok = true;
   health_ok = health_ok &&
               healthCheckNumOfElements(
                   "tasks", "config.setup.all_destination_names",
-                  mrta_complete_config->setup.number_of_destinations,
-                  mrta_complete_config->setup.all_destination_names.size());
+                  mrta_complete_config.setup.number_of_destinations,
+                  mrta_complete_config.setup.all_destination_names.size());
   health_ok =
       health_ok &&
       healthCheckNumOfElements(
           "tasks", "config.tasks_map",
-          mrta_complete_config->setup.number_of_destinations,
-          mrta_complete_config->tasks_map.size() + 1 // +1 FOR START TASK ID
+          mrta_complete_config.setup.number_of_destinations,
+          mrta_complete_config.tasks_map.size() + 1 // +1 FOR START TASK ID
               + 1);                                  // +1 FOR END TASK ID
 
   return health_ok;
