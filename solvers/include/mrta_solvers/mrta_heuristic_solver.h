@@ -60,19 +60,20 @@ private:
     task_requirements_matrix = Eigen::MatrixXd::Zero(
         mrta_complete_config_in.setup.number_of_robots,
         mrta_complete_config_in.setup.number_of_destinations);
-    for (int j = START_ID + 1;           // Skipping the START task
-         j < number_of_destinations - 1; // Skipping the END task
-         ++j) {
-      int skill_id = 0;
-      for (const auto &skill_name :
-           mrta_complete_config->setup.all_skill_names) {
+    for (int skill_id=0; skill_id<mrta_complete_config->setup.all_skill_names.size(); skill_id++) {
+      std::string skill_name = mrta_complete_config->setup.all_skill_names.at(skill_id);
+      for (int j = START_ID + 1;           // Skipping the START task
+           j < number_of_destinations - 1; // Skipping the END task
+           ++j) {
         std::map<std::string, MrtaConfig::Task>::const_iterator task_info_itr =
             mrta_complete_config_in.tasks_map.find(
                 mrta_complete_config_in.setup.all_destination_names.at(j));
         std::map<std::string, double>::const_iterator task_skill_itr =
             task_info_itr->second.skillset.find(skill_name);
-        task_requirements_matrix(j, skill_id++) = task_skill_itr->second;
+        task_requirements_matrix(j, skill_id) = task_skill_itr->second;
       }
+      task_requirements_matrix(START_ID, skill_id) = 0;
+      task_requirements_matrix(END_ID, skill_id) = 0;
     }
   }
 
@@ -151,4 +152,20 @@ private:
   void assignTaskToRobot(const MrtaConfig::CompleteConfig &mrta_complete_config,
                          MrtaSolution::CompleteSolution &ret_complete_solution,
                          int robot_id, int task_id);
+
+  int getRobotToBeAddedToCoalition(int task_id);
+  void getThresholdCrossingRobotsForCoalition(
+      int task_id, std::vector<int> &threshold_crossing_robots_vector);
+  void getRobotsMeetingExpectedThresholds(
+      int task_id, double threshold,
+      std::vector<int> &threshold_crossing_robots_vector);
+
+  int pickRobotForCoalition(int task_id,
+                            std::vector<int> &threshold_crossing_robots_vector);
+
+  int getEarliestArrivingRobot(
+      int task_id, const std::vector<int> &threshold_crossing_robots_vector);
+
+  int getClosestRobotToTask(
+      int task_id, const std::vector<int> &threshold_crossing_robots_vector);
 };

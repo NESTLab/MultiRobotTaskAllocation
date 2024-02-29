@@ -1,20 +1,20 @@
 #pragma once
+#include <memory>
 #include <mrta_utilities/mrta_config.h>
 #include <mrta_utilities/mrta_solution.h>
-#include <memory>
 
-
-class MrtaGenericSolver
-{
+class MrtaGenericSolver {
 public:
   MrtaGenericSolver(/* args */){};
   ~MrtaGenericSolver(){};
 
 protected:
-  virtual void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
-                        MrtaSolution::CompleteSolution &ret_complete_solution) = 0;
+  virtual void
+  solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                   MrtaSolution::CompleteSolution &ret_complete_solution) = 0;
 
-  virtual void updateMrtaConfig(const MrtaConfig::CompleteConfig& mrta_complete_config) = 0;
+  virtual void
+  updateMrtaConfig(const MrtaConfig::CompleteConfig &mrta_complete_config) = 0;
 
   virtual void updateWorldStatus() = 0;
 
@@ -32,7 +32,11 @@ protected:
     limited_info_mode = limited_info_mode_in;
   }
 
-  // void setSetupInfo()
+  template <typename M_k, typename M_v>
+  inline typename std::map<M_k, M_v>::const_iterator
+  getMapIterator(const std::map<M_k, M_v> &const_map, const M_k &key) {
+    return const_map.find(key);
+  };
 
-friend class MrtaInterface;
+  friend class MrtaInterface;
 };

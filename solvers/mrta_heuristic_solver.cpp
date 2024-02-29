@@ -21,8 +21,9 @@ void MrtaHeuristicSolver::solveMrtaProblem(
     healthCheckSolverInfo();
   else
     updateContributionsFromConfig();
-
-  // Phase 1: Select a pair of robot and tasks
+  /////////////////////////////////////////////////////////
+  /////// Phase 1: Select a pair of robot and tasks ///////
+  /////////////////////////////////////////////////////////
   while (contribution_array.any()) {
     std::pair<int, int> selected_robot_task_pair;
     getSelectedRobotTaskPair(selected_robot_task_pair);
@@ -32,9 +33,17 @@ void MrtaHeuristicSolver::solveMrtaProblem(
 
     updateContributionsFromConfig();
 
-    // while (local_tasks_map[selected_robot_task_pair.second].skillset) {
-    //   /* code */
-    // }
+    /////////////////////////////////////////////////////////
+    /////// Phase 2: Select a pair of robot and tasks ///////
+    /////////////////////////////////////////////////////////
+    int task_id = selected_robot_task_pair.second;
+    while (task_requirements_matrix(task_id, Eigen::all).maxCoeff()>0.001) {
+      int selected_robot = getRobotToBeAddedToCoalition(task_id);
+      // break;
+      assignTaskToRobot(mrta_complete_config, ret_complete_solution,
+                        selected_robot, task_id);
+
+    }
   }
 
   // Phase 2: Select robots until the task satisfied
@@ -80,7 +89,7 @@ void MrtaHeuristicSolver::assignTaskToRobot(
           robot_skill_itr->second >=
               task_requirements_matrix(task_id, skill_id) &&
           task_requirements_matrix(task_id, skill_id) > 0.0) {
-        task_requirements_matrix(task_id, skill_id) = 0;
+        task_requirements_matrix(task_id, skill_id) = 0.0;
       }
     }
   }
@@ -273,9 +282,7 @@ void MrtaHeuristicSolver::debugPrintContributionArray(
     const Eigen::MatrixXd matrix) {
   for (int i = 0; i < matrix.rows(); ++i) {
     for (int j = 0; j < matrix.cols(); ++j) {
-      std::cout << matrix(i, j) << " - ";
     }
-    std::cout << std::endl;
   }
 }
 
@@ -309,4 +316,91 @@ void MrtaHeuristicSolver::updateContributionsFromConfig() {
       }
     }
   }
+}
+
+int MrtaHeuristicSolver::getRobotToBeAddedToCoalition(int task_id) {
+  std::vector<int> threshold_crossing_robots_vector;
+  getThresholdCrossingRobotsForCoalition(task_id,
+                                         threshold_crossing_robots_vector);
+  return pickRobotForCoalition(task_id, threshold_crossing_robots_vector);
+}
+
+void MrtaHeuristicSolver::getThresholdCrossingRobotsForCoalition(
+    int task_id, std::vector<int> &threshold_crossing_robots_vector) {
+  double threshold = 1;
+  if (heuristic_method_config.phase_ii_config.selection_list_config ==
+      SELECTION_LIST::ONE_SKILL)
+    threshold = 1;
+  else if (heuristic_method_config.phase_ii_config.selection_list_config ==
+           SELECTION_LIST::MAX_SKILL)
+    threshold = contribution_array(Eigen::all, task_id).maxCoeff();
+  else
+    throw std::invalid_argument("UNKNOWN selection priority set");
+  getRobotsMeetingExpectedThresholds(task_id, threshold,
+                                     threshold_crossing_robots_vector);
+}
+
+void MrtaHeuristicSolver::getRobotsMeetingExpectedThresholds(
+    int task_id, double threshold,
+    std::vector<int> &threshold_crossing_robots_vector) {
+  for (int i = 0; i < contribution_array.rows(); ++i) {
+    if (contribution_array(i, task_id) >= threshold) {
+      threshold_crossing_robots_vector.push_back(i);
+    }
+  }
+}
+
+int MrtaHeuristicSolver::pickRobotForCoalition(int task_id,
+    std::vector<int> &threshold_crossing_robots_vector) {
+  int robot_id = 0;
+  if (heuristic_method_config.phase_ii_config.choosing_robot_task_pair_config ==
+      CHOOSE_R_T_PAIR::SOONEST_PAIR)
+    robot_id = getEarliestArrivingRobot(task_id, threshold_crossing_robots_vector);
+  else if (heuristic_method_config.phase_ii_config
+               .choosing_robot_task_pair_config ==
+           CHOOSE_R_T_PAIR::NEAREST_PAIR)
+    robot_id = getClosestRobotToTask(task_id, threshold_crossing_robots_vector);
+  else
+    throw std::invalid_argument("UNKNOWN selection priority set");
+  return robot_id;
+}
+
+int MrtaHeuristicSolver::getEarliestArrivingRobot(int task_id,
+    const std::vector<int> &threshold_crossing_robots_vector) {
+  int picked_robot_id;
+  double min_arrival_time = std::numeric_limits<double>::infinity();
+  for (const auto &robot_id : threshold_crossing_robots_vector) {
+    int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
+    double travel_dist =
+        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+    double last_task_start_time = task_start_time.at(last_task_id);
+    const std::string &last_task_name =
+        mrta_complete_config->setup.all_destination_names.at(task_id);
+    std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+        mrta_complete_config->tasks_map.find(last_task_name);
+    double last_task_exec_time = task_itr->second.duration;
+    double arrival_time =
+        last_task_start_time + last_task_exec_time + travel_dist;
+    if (arrival_time < min_arrival_time) {
+      min_arrival_time = arrival_time;
+      picked_robot_id = robot_id;
+    }
+  }
+  return picked_robot_id;
+}
+
+int MrtaHeuristicSolver::getClosestRobotToTask(int task_id,
+    const std::vector<int> &threshold_crossing_robots_vector) {
+  int picked_robot_id;
+  double min_travel_dist = std::numeric_limits<double>::infinity();
+  for (const auto &robot_id : threshold_crossing_robots_vector) {
+    int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
+    double travel_dist =
+        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+    if (travel_dist < min_travel_dist) {
+      min_travel_dist = travel_dist;
+      picked_robot_id = robot_id;
+    }
+  }
+  return picked_robot_id;
 }

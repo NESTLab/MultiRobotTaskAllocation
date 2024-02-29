@@ -4,21 +4,23 @@
             "robot_id": "robot_1",
             "task_sequence_map": {
                 "0": "task_1",
-                "1": "task_0"
+                "1": "task_0",
+                "2": "task_2"
             }
         },
         "robot_2": {
             "robot_id": "robot_2",
             "task_sequence_map": {
-                "0": "task_2"
+                "0": "task_1",
+                "1": "task_0"
             }
         }
     },
     "solution_quality": {
-        "maximum_robot_schedule": 0.0,
+        "maximum_robot_schedule": 1.939811158924165e-14,
         "result_description": "",
-        "result_status": 0,
+        "result_status": 1236186112,
         "solver_runtime": "",
-        "sum_of_all_robot_schedules": 0.0
+        "sum_of_all_robot_schedules": 4.585188705117234e-41
     }
 }
