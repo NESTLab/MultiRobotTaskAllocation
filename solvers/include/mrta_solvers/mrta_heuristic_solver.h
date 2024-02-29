@@ -50,18 +50,43 @@ private:
     initializeDistanceTensor();
     task_start_time = std::vector<double>(
         mrta_complete_config->setup.number_of_destinations, 0.0);
-    local_tasks_map = mrta_complete_config->tasks_map;
+    initializeTaskRequirementMatrix(mrta_complete_config_in);
   };
 
+  void initializeTaskRequirementMatrix(
+      const MrtaConfig::CompleteConfig &mrta_complete_config_in) {
+    int number_of_destinations =
+        mrta_complete_config_in.setup.number_of_destinations;
+    task_requirements_matrix = Eigen::MatrixXd::Zero(
+        mrta_complete_config_in.setup.number_of_robots,
+        mrta_complete_config_in.setup.number_of_destinations);
+    for (int j = START_ID + 1;           // Skipping the START task
+         j < number_of_destinations - 1; // Skipping the END task
+         ++j) {
+      int skill_id = 0;
+      for (const auto &skill_name :
+           mrta_complete_config->setup.all_skill_names) {
+        std::map<std::string, MrtaConfig::Task>::const_iterator task_info_itr =
+            mrta_complete_config_in.tasks_map.find(
+                mrta_complete_config_in.setup.all_destination_names.at(j));
+        std::map<std::string, double>::const_iterator task_skill_itr =
+            task_info_itr->second.skillset.find(skill_name);
+        task_requirements_matrix(j, skill_id++) = task_skill_itr->second;
+      }
+    }
+  }
+
   bool config_initialized = false;
-  MrtaConfig::CompleteConfig const * mrta_complete_config;
+  MrtaConfig::CompleteConfig const *mrta_complete_config;
 
   Eigen::MatrixXd contribution_array;
+  Eigen::MatrixXd task_requirements_matrix;
   std::vector<Eigen::MatrixXd> robot_distances_vector;
 
   std::vector<std::vector<int>> robot_task_id_attendance_sequence;
   std::vector<double> task_start_time;
-  std::map<std::string, MrtaConfig::Task> local_tasks_map;
+  std::map<std::string, std::map<std::string, double>>
+      robot_task_attendance_times_map;
 
   void updateWorldStatus(){};
 
@@ -122,4 +147,8 @@ private:
       std::pair<int, int> &ret_chosen_robot_task_pair);
 
   void debugPrintContributionArray(const Eigen::MatrixXd matrix);
+
+  void assignTaskToRobot(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                         MrtaSolution::CompleteSolution &ret_complete_solution,
+                         int robot_id, int task_id);
 };
