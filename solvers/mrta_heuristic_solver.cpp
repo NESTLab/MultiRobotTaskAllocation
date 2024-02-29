@@ -37,18 +37,20 @@ void MrtaHeuristicSolver::solveMrtaProblem(
     /////// Phase 2: Select a pair of robot and tasks ///////
     /////////////////////////////////////////////////////////
     int task_id = selected_robot_task_pair.second;
-    while (task_requirements_matrix(task_id, Eigen::all).maxCoeff()>0.001) {
+    while (contribution_array(Eigen::all, task_id).any()) {
       int selected_robot = getRobotToBeAddedToCoalition(task_id);
-      // break;
       assignTaskToRobot(mrta_complete_config, ret_complete_solution,
                         selected_robot, task_id);
+      updateContributionsFromConfig();
 
+
+    /////////////////////////////////////////////////////////
+    ///////////// Phase 3: Refine the coalition /////////////
+    /////////////////////////////////////////////////////////
+    /**TODO**/
     }
+    // Delete superfluous robots
   }
-
-  // Phase 2: Select robots until the task satisfied
-
-  // Delete superfluous robots
 }
 
 void MrtaHeuristicSolver::assignTaskToRobot(
