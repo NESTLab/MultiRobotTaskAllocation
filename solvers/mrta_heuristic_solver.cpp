@@ -99,9 +99,12 @@ void MrtaHeuristicSolver::assignTaskToRobot(
   double last_task_attendance_time =
       robot_task_attendance_times_map[robot_name][last_task_name];
 
-  robot_task_attendance_times_map[robot_name][task_name] =
+  double attendance_time =
       last_task_attendance_time + task_itr->second.duration +
       robot_distances_vector.at(robot_id)(last_task_id, task_id);
+
+  ret_complete_solution.robot_task_schedule_map[robot_name].task_arrival_time_map[task_name] = attendance_time;
+  robot_task_attendance_times_map[robot_name][task_name] = attendance_time;
 }
 
 void MrtaHeuristicSolver::initializeDistanceTensor() {
