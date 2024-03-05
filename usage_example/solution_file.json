@@ -1,26 +1,65 @@
 {
     "robots_schedule": {
-        "robot_1": {
-            "robot_id": "robot_1",
+        "0": {
+            "robot_id": "0",
+            "task_arrival_time_map": {
+                "7": 0.8930656218698557,
+                "END": 1.7753174090378216
+            },
             "task_sequence_map": {
-                "0": "task_1",
-                "1": "task_0",
-                "2": "task_2"
+                "0": "7",
+                "1": "END"
             }
         },
-        "robot_2": {
-            "robot_id": "robot_2",
+        "1": {
+            "robot_id": "1",
+            "task_arrival_time_map": {
+                "0": 2.0108869497896356,
+                "3": 0.6855088487909435,
+                "END": 2.684427014995327
+            },
             "task_sequence_map": {
-                "0": "task_1",
-                "1": "task_0"
+                "0": "3",
+                "1": "0",
+                "2": "END"
+            }
+        },
+        "2": {
+            "robot_id": "2",
+            "task_arrival_time_map": {
+                "0": 1.3989178147888435,
+                "4": 3.154569385997587,
+                "6": 5.012997572969434,
+                "END": 6.072560617146172
+            },
+            "task_sequence_map": {
+                "0": "0",
+                "1": "4",
+                "2": "6",
+                "3": "END"
+            }
+        },
+        "3": {
+            "robot_id": "3",
+            "task_arrival_time_map": {
+                "1": 1.2366700504646575,
+                "2": 3.958027520716543,
+                "5": 2.5199541033917723,
+                "END": 4.9739762140234225
+            },
+            "task_sequence_map": {
+                "0": "1",
+                "1": "5",
+                "2": "2",
+                "3": "END"
             }
         }
     },
     "solution_quality": {
-        "maximum_robot_schedule": 1.939811158924165e-14,
+        "maximum_robot_schedule": 6.9361676419283e-310,
         "result_description": "",
-        "result_status": 1236186112,
+        "result_status": -1887128576,
         "solver_runtime": "",
-        "sum_of_all_robot_schedules": 4.585188705117234e-41
+        "sum_of_all_robot_schedules": 8e-323
     }
 }

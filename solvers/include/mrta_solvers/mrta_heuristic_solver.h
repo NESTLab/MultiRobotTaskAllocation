@@ -108,4 +108,6 @@ private:
 
   int getClosestRobotToTask(
       int task_id, const std::vector<int> &threshold_crossing_robots_vector);
+
+  void setTaskStartTimes();
 };

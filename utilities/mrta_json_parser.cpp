@@ -18,12 +18,16 @@ void MrtaJsonParser::parseJsonFile(
     file.close();
 
     loadSetupFromJson(json_data, ret_complete_config.setup);
+    std::cout<<"[INFO] All setup loaded!"<<std::endl;
     loadTasksFromJson(json_data, ret_complete_config.setup,
                       ret_complete_config.tasks_map);
+    std::cout<<"[INFO] All tasks loaded!"<<std::endl;
     loadRobotsFromJson(json_data, ret_complete_config.setup,
                        ret_complete_config.robots_map);
+    std::cout<<"[INFO] All robots loaded!"<<std::endl;
     loadSkillDegradationFromJson(json_data, ret_complete_config.setup,
                                  ret_complete_config.environment);
+    std::cout<<"[INFO] All skill degradation rates loaded!"<<std::endl;
     // loadPathSigmas(json_data);
 
   } catch (const std::exception &e) {

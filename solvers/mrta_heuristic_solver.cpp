@@ -32,6 +32,8 @@ void MrtaHeuristicSolver::solveMrtaProblem(
                       selected_robot_task_pair.second);
 
     updateContributionsFromConfig();
+    std::vector<int> robots_in_coalition;
+    robots_in_coalition.push_back(selected_robot_task_pair.first);
 
     /////////////////////////////////////////////////////////
     /////// Phase 2: Select a pair of robot and tasks ///////
@@ -42,16 +44,44 @@ void MrtaHeuristicSolver::solveMrtaProblem(
       assignTaskToRobot(mrta_complete_config, ret_complete_solution,
                         selected_robot, task_id);
       updateContributionsFromConfig();
+      robots_in_coalition.push_back(selected_robot);
 
-
-    /////////////////////////////////////////////////////////
-    ///////////// Phase 3: Refine the coalition /////////////
-    /////////////////////////////////////////////////////////
-    /**TODO**/
+      /////////////////////////////////////////////////////////
+      ///////////// Phase 3: Refine the coalition /////////////
+      /////////////////////////////////////////////////////////
+      /**TODO**/
     }
     // Delete superfluous robots
+
+    // Set the task start times
+    double task_start_time = 0.0;
+    for (int robot_id : robots_in_coalition) {
+      const std::string &robot_name =
+          mrta_complete_config.setup.all_robot_names.at(robot_id);
+      const std::string &task_name =
+          mrta_complete_config.setup.all_destination_names.at(task_id);
+
+      if (task_start_time <
+          robot_task_attendance_times_map[robot_name][task_name])
+        task_start_time =
+            robot_task_attendance_times_map[robot_name][task_name];
+    }
+    for (int robot_id : robots_in_coalition) {
+      const std::string &robot_name =
+          mrta_complete_config.setup.all_robot_names.at(robot_id);
+      const std::string &task_name =
+          mrta_complete_config.setup.all_destination_names.at(task_id);
+
+      robot_task_attendance_times_map[robot_name][task_name] = task_start_time;
+    }
+  }
+
+  for (int i = 0; i < mrta_complete_config.setup.number_of_robots; i++) {
+    assignTaskToRobot(mrta_complete_config, ret_complete_solution, i, END_ID);
   }
 }
+
+void MrtaHeuristicSolver::setTaskStartTimes() {}
 
 void MrtaHeuristicSolver::assignTaskToRobot(
     const MrtaConfig::CompleteConfig &mrta_complete_config,
@@ -103,7 +133,8 @@ void MrtaHeuristicSolver::assignTaskToRobot(
       last_task_attendance_time + task_itr->second.duration +
       robot_distances_vector.at(robot_id)(last_task_id, task_id);
 
-  ret_complete_solution.robot_task_schedule_map[robot_name].task_arrival_time_map[task_name] = attendance_time;
+  ret_complete_solution.robot_task_schedule_map[robot_name]
+      .task_arrival_time_map[task_name] = attendance_time;
   robot_task_attendance_times_map[robot_name][task_name] = attendance_time;
 }
 
@@ -292,12 +323,13 @@ void MrtaHeuristicSolver::getRobotsMeetingExpectedThresholds(
   }
 }
 
-int MrtaHeuristicSolver::pickRobotForCoalition(int task_id,
-    std::vector<int> &threshold_crossing_robots_vector) {
+int MrtaHeuristicSolver::pickRobotForCoalition(
+    int task_id, std::vector<int> &threshold_crossing_robots_vector) {
   int robot_id = 0;
   if (heuristic_method_config.phase_ii_config.choosing_robot_task_pair_config ==
       CHOOSE_R_T_PAIR::SOONEST_PAIR)
-    robot_id = getEarliestArrivingRobot(task_id, threshold_crossing_robots_vector);
+    robot_id =
+        getEarliestArrivingRobot(task_id, threshold_crossing_robots_vector);
   else if (heuristic_method_config.phase_ii_config
                .choosing_robot_task_pair_config ==
            CHOOSE_R_T_PAIR::NEAREST_PAIR)
@@ -307,8 +339,8 @@ int MrtaHeuristicSolver::pickRobotForCoalition(int task_id,
   return robot_id;
 }
 
-int MrtaHeuristicSolver::getEarliestArrivingRobot(int task_id,
-    const std::vector<int> &threshold_crossing_robots_vector) {
+int MrtaHeuristicSolver::getEarliestArrivingRobot(
+    int task_id, const std::vector<int> &threshold_crossing_robots_vector) {
   int picked_robot_id;
   double min_arrival_time = std::numeric_limits<double>::infinity();
   for (const auto &robot_id : threshold_crossing_robots_vector) {
@@ -331,8 +363,8 @@ int MrtaHeuristicSolver::getEarliestArrivingRobot(int task_id,
   return picked_robot_id;
 }
 
-int MrtaHeuristicSolver::getClosestRobotToTask(int task_id,
-    const std::vector<int> &threshold_crossing_robots_vector) {
+int MrtaHeuristicSolver::getClosestRobotToTask(
+    int task_id, const std::vector<int> &threshold_crossing_robots_vector) {
   int picked_robot_id;
   double min_travel_dist = std::numeric_limits<double>::infinity();
   for (const auto &robot_id : threshold_crossing_robots_vector) {

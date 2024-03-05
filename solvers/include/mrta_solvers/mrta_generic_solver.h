@@ -62,8 +62,8 @@ protected:
     int number_of_destinations =
         mrta_complete_config_in.setup.number_of_destinations;
     task_requirements_matrix = Eigen::MatrixXd::Zero(
-        mrta_complete_config_in.setup.number_of_robots,
-        mrta_complete_config_in.setup.number_of_destinations);
+        mrta_complete_config_in.setup.number_of_destinations,
+        mrta_complete_config_in.setup.number_of_skills);
     for (int skill_id = 0;
          skill_id < mrta_complete_config->setup.all_skill_names.size();
          skill_id++) {

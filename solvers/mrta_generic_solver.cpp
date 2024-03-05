@@ -1,6 +1,5 @@
 #include <mrta_solvers/mrta_generic_solver.h>
 
-
 void MrtaGenericSolver::initializeDistanceTensor() {
   int number_of_robots = mrta_complete_config->setup.number_of_robots;
   int number_of_destinations =
@@ -40,6 +39,10 @@ void MrtaGenericSolver::putDistancesForRobot(
         std::numeric_limits<double>::infinity();
     ret_i_distance_matrix(END_ID, END_ID) =
         std::numeric_limits<double>::infinity();
+    ret_i_distance_matrix(START_ID, END_ID) = getPureDistance(
+        robot_itr->second.position, robot_itr->second.desired_end_position);
+    ret_i_distance_matrix(END_ID, START_ID) =
+        ret_i_distance_matrix(START_ID, END_ID);
     ret_i_distance_matrix(task_id, task_id) =
         std::numeric_limits<double>::infinity();
     for (size_t second_task_id = task_id + 1;
