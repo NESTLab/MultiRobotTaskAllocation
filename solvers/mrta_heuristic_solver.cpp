@@ -24,7 +24,7 @@ void MrtaHeuristicSolver::solveMrtaProblem(
   /////////////////////////////////////////////////////////
   /////// Phase 1: Select a pair of robot and tasks ///////
   /////////////////////////////////////////////////////////
-  while (contribution_array.any()) {
+  while (contribution_array.maxCoeff()>0.0001) {
     std::pair<int, int> selected_robot_task_pair;
     getSelectedRobotTaskPair(selected_robot_task_pair);
     assignTaskToRobot(mrta_complete_config, ret_complete_solution,
@@ -39,7 +39,7 @@ void MrtaHeuristicSolver::solveMrtaProblem(
     /////// Phase 2: Select a pair of robot and tasks ///////
     /////////////////////////////////////////////////////////
     int task_id = selected_robot_task_pair.second;
-    while (contribution_array(Eigen::all, task_id).any()) {
+    while (contribution_array(Eigen::all, task_id).maxCoeff()>0.0001) {
       int selected_robot = getRobotToBeAddedToCoalition(task_id);
       assignTaskToRobot(mrta_complete_config, ret_complete_solution,
                         selected_robot, task_id);
@@ -117,10 +117,10 @@ void MrtaHeuristicSolver::assignTaskToRobot(
       std::map<std::string, double>::const_iterator robot_skill_itr =
           robot_itr->second.skillset.find(
               mrta_complete_config.setup.all_skill_names.at(skill_id));
-      if (robot_skill_itr->second > 0.0 &&
+      if (robot_skill_itr->second > 0.0001 &&
           robot_skill_itr->second >=
               task_requirements_matrix(task_id, skill_id) &&
-          task_requirements_matrix(task_id, skill_id) > 0.0) {
+          task_requirements_matrix(task_id, skill_id) > 0.0001) {
         task_requirements_matrix(task_id, skill_id) = 0.0;
       }
     }
@@ -179,7 +179,7 @@ void MrtaHeuristicSolver::getRequiredRobotTaskWithContributionsAboveThreshold(
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
   Eigen::MatrixXi mask =
       contribution_array.array().unaryExpr([threshold](double val) {
-        return (val >= threshold && val > 0.0) ? 1 : 0;
+        return (val >= threshold && val > 0.0001) ? 1 : 0;
       });
   for (int i = 0; i < mask.rows(); ++i) {
     for (int j = 0; j < mask.cols(); ++j) {
@@ -284,7 +284,7 @@ void MrtaHeuristicSolver::updateContributionsFromConfig() {
             robot_info_itr->second.skillset.find(skill_name);
 
         if (robot_skill_itr->second >= task_requirements_matrix(j, s) &&
-            task_requirements_matrix(j, s) > 0.0)
+            task_requirements_matrix(j, s) > 0.0001)
           ++contribution_array(i, j);
       }
     }
