@@ -43,18 +43,22 @@ protected:
 
   void
   updateMrtaConfig(const MrtaConfig::CompleteConfig &mrta_complete_config_in) {
-    config_initialized = true;
-    mrta_complete_config = &mrta_complete_config_in;
-    END_ID = mrta_complete_config->setup.number_of_destinations - 1;
-    robot_task_id_attendance_sequence.resize(
-        mrta_complete_config->setup.number_of_robots);
-    for (auto &robot_task_att : robot_task_id_attendance_sequence) {
-      robot_task_att = std::vector<int>(1, START_ID);
+    try {
+      config_initialized = true;
+      mrta_complete_config = &mrta_complete_config_in;
+      END_ID = mrta_complete_config->setup.number_of_destinations - 1;
+      robot_task_id_attendance_sequence.resize(
+          mrta_complete_config->setup.number_of_robots);
+      for (auto &robot_task_att : robot_task_id_attendance_sequence) {
+        robot_task_att = std::vector<int>(1, START_ID);
+      }
+      initializeDistanceTensor();
+      task_start_time = std::vector<double>(
+          mrta_complete_config->setup.number_of_destinations, 0.0);
+      initializeTaskRequirementMatrix(mrta_complete_config_in);
+    } catch (const std::exception &e) {
+      std::cerr << e.what() << '\n';
     }
-    initializeDistanceTensor();
-    task_start_time = std::vector<double>(
-        mrta_complete_config->setup.number_of_destinations, 0.0);
-    initializeTaskRequirementMatrix(mrta_complete_config_in);
   };
 
   void initializeTaskRequirementMatrix(
@@ -75,9 +79,20 @@ protected:
         std::map<std::string, MrtaConfig::Task>::const_iterator task_info_itr =
             mrta_complete_config_in.tasks_map.find(
                 mrta_complete_config_in.setup.all_destination_names.at(j));
-        std::map<std::string, double>::const_iterator task_skill_itr =
-            task_info_itr->second.skillset.find(skill_name);
-        task_requirements_matrix(j, skill_id) = task_skill_itr->second;
+        if (task_info_itr != mrta_complete_config_in.tasks_map.end()) {
+          std::map<std::string, double>::const_iterator task_skill_itr =
+              task_info_itr->second.skillset.find(skill_name);
+          if (task_skill_itr != task_info_itr->second.skillset.end()) {
+            task_requirements_matrix(j, skill_id) = task_skill_itr->second;
+          } else {
+            task_requirements_matrix(j, skill_id) = 0.0;
+          }
+        } else {
+          throw std::runtime_error(
+              "Task " +
+              mrta_complete_config_in.setup.all_destination_names.at(j) +
+              " not found in MRTA Config");
+        }
       }
       task_requirements_matrix(START_ID, skill_id) = 0;
       task_requirements_matrix(END_ID, skill_id) = 0;
