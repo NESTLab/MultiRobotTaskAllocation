@@ -220,6 +220,7 @@ bool MrtaInterface::healthCheckConfig(
   // Check if number of things in setup matches number of elements in maps
   health_ok = health_ok && healthCheckNumOfRobots(mrta_complete_config);
   health_ok = health_ok && healthCheckNumOfTasks(mrta_complete_config);
+  health_ok = health_ok && healthCheckNumOfSkills(mrta_complete_config);
 
   return health_ok;
 }
@@ -271,6 +272,17 @@ bool MrtaInterface::healthCheckNumOfTasks(
           mrta_complete_config.tasks_map.size() + 1 // +1 FOR START TASK ID
               + 1);                                  // +1 FOR END TASK ID
 
+  return health_ok;
+}
+
+bool MrtaInterface::healthCheckNumOfSkills(
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  bool health_ok = true;
+  health_ok = health_ok &&
+              healthCheckNumOfElements(
+                  "skills", "config.setup.all_skill_names",
+                  mrta_complete_config.setup.number_of_skills,
+                  mrta_complete_config.setup.all_skill_names.size());
   return health_ok;
 }
 

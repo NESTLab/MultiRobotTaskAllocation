@@ -102,6 +102,8 @@ private:
       const MrtaConfig::CompleteConfig &mrta_complete_config);
   bool
   healthCheckNumOfTasks(const MrtaConfig::CompleteConfig &mrta_complete_config);
+  bool
+  healthCheckNumOfSkills(const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
   const int NUMBER_OF_DASHES_PER_INDENT = 3;

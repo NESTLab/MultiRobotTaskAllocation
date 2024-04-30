@@ -15,11 +15,14 @@ int main(int argc, char const *argv[]) {
   MrtaInterface mrta_interface;
 
   // Debug and check if the config file is being interpreted correctly
-  // mrta_interface.debugPrintConfigCompleteConfig(mrta_config_ptr);
+  // mrta_interface.debugPrintConfigCompleteConfig(mrta_config);
 
   // Make sure that the config file is good enough to be used for solving
-  // std::cout << mrta_interface.healthCheckConfig(mrta_config_ptr) <<
-  // std::endl;
+  bool health_check = mrta_interface.healthCheckConfig(mrta_config);
+  if (!health_check){
+    std::cout<<"[ERROR] | The Setup failed Health Check"<<std::endl;
+    return -1;
+  }
 
   // Set which method do you want to use for solving the problem
   mrta_interface.setMrtaSolverMethod(std::make_shared<MrtaHeuristicSolver>());
