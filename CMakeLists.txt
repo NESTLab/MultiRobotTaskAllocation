@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(mrta_cpp)
 
-option(CXX "enable C++ compilation" ON)
+# option(CXX "enable C++ compilation" ON)
 # Enforce C++-standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -15,22 +15,22 @@ if((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL ""))
     FORCE)
 endif((NOT CMAKE_BUILD_TYPE) OR (CMAKE_BUILD_TYPE STREQUAL ""))
 
-# # Special behavior if debug builds were chosen
-# if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-#   # Enable Asan by default
-#   set(ASAN_COMPILER_FLAGS " -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
-#   set(ASAN_LINKER_FLAGS " -fsanitize=address")
-#   string(APPEND CMAKE_C_FLAGS_DEBUG            ${ASAN_COMPILER_FLAGS})
-#   string(APPEND CMAKE_CXX_FLAGS_DEBUG          ${ASAN_COMPILER_FLAGS})
-#   string(APPEND CMAKE_C_FLAGS_RELWITHDEBINFO   ${ASAN_COMPILER_FLAGS})
-#   string(APPEND CMAKE_CXX_FLAGS_RELWITHDEBINFO ${ASAN_COMPILER_FLAGS})
-#   set(CMAKE_EXE_LINKER_FLAGS_DEBUG             ${ASAN_LINKER_FLAGS})
-#   set(CMAKE_SHARED_LINKER_FLAGS_DEBUG          ${ASAN_LINKER_FLAGS})
-#   set(CMAKE_MODULE_LINKER_FLAGS_DEBUG          ${ASAN_LINKER_FLAGS})
-#   set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO    ${ASAN_LINKER_FLAGS})
-#   set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${ASAN_LINKER_FLAGS})
-#   set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO ${ASAN_LINKER_FLAGS})
-# endif(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+# Special behavior if debug builds were chosen
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+  # Enable Asan by default
+  set(ASAN_COMPILER_FLAGS " -fsanitize=address -fno-optimize-sibling-calls -fno-omit-frame-pointer")
+  set(ASAN_LINKER_FLAGS " -fsanitize=address")
+  string(APPEND CMAKE_C_FLAGS_DEBUG            ${ASAN_COMPILER_FLAGS})
+  string(APPEND CMAKE_CXX_FLAGS_DEBUG          ${ASAN_COMPILER_FLAGS})
+  string(APPEND CMAKE_C_FLAGS_RELWITHDEBINFO   ${ASAN_COMPILER_FLAGS})
+  string(APPEND CMAKE_CXX_FLAGS_RELWITHDEBINFO ${ASAN_COMPILER_FLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS_DEBUG             ${ASAN_LINKER_FLAGS})
+  set(CMAKE_SHARED_LINKER_FLAGS_DEBUG          ${ASAN_LINKER_FLAGS})
+  set(CMAKE_MODULE_LINKER_FLAGS_DEBUG          ${ASAN_LINKER_FLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO    ${ASAN_LINKER_FLAGS})
+  set(CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO ${ASAN_LINKER_FLAGS})
+  set(CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO ${ASAN_LINKER_FLAGS})
+endif(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
 
 # Standard include directory
 include_directories(${CMAKE_SOURCE_DIR})
