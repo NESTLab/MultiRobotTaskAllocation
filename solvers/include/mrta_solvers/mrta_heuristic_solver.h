@@ -34,7 +34,10 @@ private:
                         MrtaSolution::CompleteSolution &ret_complete_solution);
 
   Eigen::MatrixXd contribution_array;
-
+  Eigen::Tensor<double, 3> robot_skills_reported_at_tasks;
+  int number_of_robots;
+  int number_of_destinations;
+  int number_of_skills;
 
   void updateWorldStatus(){};
 
@@ -57,7 +60,7 @@ private:
    *            - Contribution matrix
    *
    */
-  void setupEnvironment();
+  void setupEnvironment(const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   void
   getSelectedRobotTaskPair(std::pair<int, int> &ret_selected_robot_task_pair);
@@ -110,4 +113,13 @@ private:
       int task_id, const std::vector<int> &threshold_crossing_robots_vector);
 
   void setTaskStartTimes();
+
+  void refineCoalition(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                       MrtaSolution::CompleteSolution &ret_complete_solution,
+                       std::vector<int> &robots_in_coalition, int task_id);
+
+  void deleteRobotFromCoalition(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
+      MrtaSolution::CompleteSolution &ret_complete_solution,
+      std::vector<int> &robots_in_coalition, int robot_id, int task_id);
 };

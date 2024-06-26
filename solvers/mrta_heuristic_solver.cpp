@@ -1,5 +1,6 @@
 #include <limits>
 #include <mrta_solvers/mrta_heuristic_solver.h>
+#define ZERO 0.0001
 
 void MrtaHeuristicSolver::solveMrtaProblem(
     const MrtaConfig::CompleteConfig &mrta_complete_config,
@@ -16,15 +17,17 @@ void MrtaHeuristicSolver::solveMrtaProblem(
       CHOOSE_R_T_PAIR::SOONEST_PAIR;
   solver_config.delete_superfluous = DELETE_SUPERFLUOUS::LATEST_ROBOT;
   setHeuristicSolverConfig(solver_config);
+  setupEnvironment(mrta_complete_config);
 
   if (limited_info_mode)
     healthCheckSolverInfo();
   else
     updateContributionsFromConfig();
+
   /////////////////////////////////////////////////////////
   /////// Phase 1: Select a pair of robot and tasks ///////
   /////////////////////////////////////////////////////////
-  while (contribution_array.maxCoeff() > 0.0001) {
+  while (contribution_array.maxCoeff() > ZERO) {
     std::pair<int, int> selected_robot_task_pair;
     getSelectedRobotTaskPair(selected_robot_task_pair);
     assignTaskToRobot(mrta_complete_config, ret_complete_solution,
@@ -39,19 +42,19 @@ void MrtaHeuristicSolver::solveMrtaProblem(
     /////// Phase 2: Select a pair of robot and tasks ///////
     /////////////////////////////////////////////////////////
     int task_id = selected_robot_task_pair.second;
-    while (contribution_array(Eigen::all, task_id).maxCoeff() > 0.0001) {
+    while (contribution_array(Eigen::all, task_id).maxCoeff() > ZERO) {
       int selected_robot = getRobotToBeAddedToCoalition(task_id);
       assignTaskToRobot(mrta_complete_config, ret_complete_solution,
                         selected_robot, task_id);
       updateContributionsFromConfig();
       robots_in_coalition.push_back(selected_robot);
-
-      /////////////////////////////////////////////////////////
-      ///////////// Phase 3: Refine the coalition /////////////
-      /////////////////////////////////////////////////////////
-      /**TODO**/
     }
-    // Delete superfluous robots
+
+    /////////////////////////////////////////////////////////
+    ///////////// Phase 3: Refine the coalition /////////////
+    /////////////////////////////////////////////////////////
+    refineCoalition(mrta_complete_config, ret_complete_solution,
+                    robots_in_coalition, task_id);
 
     // Set the task start times
     double task_start_time = 0.0;
@@ -81,6 +84,106 @@ void MrtaHeuristicSolver::solveMrtaProblem(
   }
 }
 
+void MrtaHeuristicSolver::setupEnvironment(
+    const MrtaConfig::CompleteConfig &mrta_complete_config) {
+  number_of_robots = mrta_complete_config.setup.number_of_robots;
+  number_of_destinations = mrta_complete_config.setup.number_of_destinations;
+  number_of_skills = mrta_complete_config.setup.number_of_skills;
+
+  robot_skills_reported_at_tasks = Eigen::Tensor<double, 3>(
+      number_of_robots, number_of_destinations, number_of_skills);
+}
+
+void MrtaHeuristicSolver::refineCoalition(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
+    MrtaSolution::CompleteSolution &ret_complete_solution,
+    std::vector<int> &robots_in_coalition, int task_id) {
+  for (size_t it = 0; it < robots_in_coalition.size(); ++it) {
+    size_t it_in_vec = (heuristic_method_config.delete_superfluous ==
+                    DELETE_SUPERFLUOUS::EARLIEST_ROBOT)
+                       ? it
+                       : robots_in_coalition.size() - it - 1;
+
+    int robot_id = robots_in_coalition.at(it_in_vec);
+    const std::string &robot_name =
+        mrta_complete_config.setup.all_robot_names.at(robot_id);
+    std::map<std::string, MrtaConfig::Robot>::const_iterator robot_info_itr =
+        mrta_complete_config.robots_map.find(robot_name);
+    if (robot_info_itr == mrta_complete_config.robots_map.end())
+      throw std::runtime_error("Robot " + robot_name +
+                               " in coalition is not found in MRTA config.");
+
+    int number_of_skills_contributed = 0;
+    int number_of_skills_redundant = 0;
+    for (int s = 0; s < number_of_skills; ++s) {
+      Eigen::Tensor<double, 0> count_of_skills_at_task =
+          robot_skills_reported_at_tasks.chip(task_id, 1).chip(s, 1).sum();
+      if (robot_skills_reported_at_tasks(robot_id, task_id, s) > ZERO) {
+        ++number_of_skills_contributed;
+        if ((count_of_skills_at_task() -
+             robot_skills_reported_at_tasks(robot_id, task_id, s)) > ZERO)
+          ++number_of_skills_redundant;
+      }
+    }
+    if (number_of_skills_contributed == number_of_skills_redundant) {
+      deleteRobotFromCoalition(mrta_complete_config, ret_complete_solution,
+                               robots_in_coalition, robot_id, task_id);
+    }
+  }
+}
+
+void MrtaHeuristicSolver::deleteRobotFromCoalition(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
+    MrtaSolution::CompleteSolution &ret_complete_solution,
+    std::vector<int> &robots_in_coalition, int robot_id, int task_id) {
+
+  const std::string &robot_name =
+      mrta_complete_config.setup.all_robot_names.at(robot_id);
+  const std::string &task_name =
+      mrta_complete_config.setup.all_destination_names.at(task_id);
+
+  ret_complete_solution.robot_task_schedule_map[robot_name]
+      .task_attendance_sequence.pop_back();
+
+  robot_task_id_attendance_sequence.at(robot_id).pop_back();
+
+  std::map<std::string, MrtaConfig::Robot>::const_iterator robot_itr =
+      mrta_complete_config.robots_map.find(robot_name);
+
+  std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+      mrta_complete_config.tasks_map.find(task_name);
+
+  if (robot_itr != mrta_complete_config.robots_map.end()) {
+    for (int skill_id = 0;
+         skill_id < mrta_complete_config.setup.all_skill_names.size();
+         skill_id++) {
+      std::string skill_name =
+          mrta_complete_config.setup.all_skill_names.at(skill_id);
+      std::map<std::string, double>::const_iterator robot_skill_itr =
+          robot_itr->second.skillset.find(skill_name);
+      std::map<std::string, double>::const_iterator task_skill_itr =
+          task_itr->second.skillset.find(skill_name);
+      if (robot_skill_itr != robot_itr->second.skillset.end())
+        if (task_skill_itr != task_itr->second.skillset.end())
+          if (robot_skill_itr->second > ZERO)
+            if (task_skill_itr->second > ZERO)
+              if (robot_skill_itr->second >= task_skill_itr->second) {
+                robot_skills_reported_at_tasks(robot_id, task_id, skill_id) -=
+                    robot_skill_itr->second;
+              }
+    }
+  }
+
+  ret_complete_solution.robot_task_schedule_map[robot_name]
+      .task_arrival_time_map[task_name] = 0.0;
+  robot_task_attendance_times_map[robot_name][task_name] = 0.0;
+
+  std::vector<int>::iterator position = std::find(
+      robots_in_coalition.begin(), robots_in_coalition.end(), robot_id);
+  if (position != robots_in_coalition.end())
+    robots_in_coalition.erase(position);
+}
+
 void MrtaHeuristicSolver::setTaskStartTimes() {}
 
 void MrtaHeuristicSolver::assignTaskToRobot(
@@ -103,32 +206,37 @@ void MrtaHeuristicSolver::assignTaskToRobot(
   robot_task_id_attendance_sequence.at(robot_id).push_back(task_id);
 
   std::map<std::string, MrtaConfig::Robot>::const_iterator robot_itr =
-      mrta_complete_config.robots_map.find(
-          mrta_complete_config.setup.all_robot_names.at(robot_id));
+      mrta_complete_config.robots_map.find(robot_name);
+
+  std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+      mrta_complete_config.tasks_map.find(task_name);
 
   if (robot_itr != mrta_complete_config.robots_map.end()) {
-    for (int skill_id = 0;
-         skill_id < mrta_complete_config.setup.all_skill_names.size();
-         skill_id++) {
-      std::map<std::string, double>::const_iterator robot_skill_itr =
-          robot_itr->second.skillset.find(
-              mrta_complete_config.setup.all_skill_names.at(skill_id));
-      if (robot_skill_itr != robot_itr->second.skillset.end())
-        if (robot_skill_itr->second > 0.0001)
-          if (robot_skill_itr->second >=
-              task_requirements_matrix(task_id, skill_id))
-            if (task_requirements_matrix(task_id, skill_id) > 0.0001) {
-              task_requirements_matrix(task_id, skill_id) = 0.0;
-            }
+    if (task_itr != mrta_complete_config.tasks_map.end()) {
+      for (int skill_id = 0;
+           skill_id < mrta_complete_config.setup.all_skill_names.size();
+           skill_id++) {
+        std::string skill_name =
+            mrta_complete_config.setup.all_skill_names.at(skill_id);
+        std::map<std::string, double>::const_iterator robot_skill_itr =
+            robot_itr->second.skillset.find(skill_name);
+        std::map<std::string, double>::const_iterator task_skill_itr =
+            task_itr->second.skillset.find(skill_name);
+        if (robot_skill_itr != robot_itr->second.skillset.end())
+          if (task_skill_itr != task_itr->second.skillset.end())
+            if (robot_skill_itr->second > ZERO)
+              if (task_skill_itr->second > ZERO)
+                if (robot_skill_itr->second >= task_skill_itr->second) {
+                  task_requirements_matrix(task_id, skill_id) = 0.0;
+                  robot_skills_reported_at_tasks(robot_id, task_id, skill_id) +=
+                      robot_skill_itr->second;
+                }
+      }
     }
   }
 
   double last_task_attendance_time =
       robot_task_attendance_times_map[robot_name][last_task_name];
-
-  std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
-      mrta_complete_config.tasks_map.find(
-          mrta_complete_config.setup.all_destination_names.at(task_id));
 
   double attendance_time = 0.0;
   if (task_itr != mrta_complete_config.tasks_map.end()) {
@@ -182,7 +290,7 @@ void MrtaHeuristicSolver::getRequiredRobotTaskWithContributionsAboveThreshold(
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
   Eigen::MatrixXi mask =
       contribution_array.array().unaryExpr([threshold](double val) {
-        return (val >= threshold && val > 0.0001) ? 1 : 0;
+        return (val >= threshold && val > ZERO) ? 1 : 0;
       });
   for (int i = 0; i < mask.rows(); ++i) {
     for (int j = 0; j < mask.cols(); ++j) {
@@ -263,9 +371,6 @@ void MrtaHeuristicSolver::debugPrintContributionArray(
 }
 
 void MrtaHeuristicSolver::updateContributionsFromConfig() {
-  int number_of_robots = mrta_complete_config->setup.number_of_robots;
-  int number_of_destinations =
-      mrta_complete_config->setup.number_of_destinations;
   contribution_array =
       Eigen::MatrixXd::Zero(number_of_robots, number_of_destinations);
   for (int i = 0; i < number_of_robots; ++i) {
@@ -284,7 +389,7 @@ void MrtaHeuristicSolver::updateContributionsFromConfig() {
               robot_info_itr->second.skillset.find(skill_name);
           if (robot_skill_itr != robot_info_itr->second.skillset.end())
             if (robot_skill_itr->second >= task_requirements_matrix(j, s))
-              if (task_requirements_matrix(j, s) > 0.0001)
+              if (task_requirements_matrix(j, s) > ZERO)
                 ++contribution_array(i, j);
         }
       }
