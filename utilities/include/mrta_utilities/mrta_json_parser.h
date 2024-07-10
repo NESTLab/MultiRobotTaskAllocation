@@ -9,7 +9,8 @@ public:
   MrtaJsonParser(){};
   ~MrtaJsonParser(){};
 
-  static void parseJsonFile(const std::string &json_file_name, MrtaConfig::CompleteConfig& ret_complete_config);
+  static void parseJsonFile(const std::string &json_file_name,
+                            MrtaConfig::CompleteConfig &ret_complete_config);
 
 private:
   // JSON field names
@@ -32,6 +33,17 @@ private:
 
   inline const static std::string START_TASK_NAME = "START";
   inline const static std::string END_TASK_NAME = "END";
+
+  // JSON solver config names
+  inline const static std::string json_solver_info = "solver_info";
+  inline const static std::string json_solver_type = "solver_type";
+  inline const static std::string json_solver_config = "solver_config";
+
+  // Solver config specific texts:
+  inline const static std::string solver_config_type_heuristic = "HEURISTIC";
+  inline const static std::string solver_config_type_milp = "MILP";
+  inline const static std::string solver_config_type_sorted = "SORTED";
+
   // Default values
   inline const static bool default_use_robot_ends = false;
   inline const static bool default_use_stochasticity = false;
@@ -45,6 +57,9 @@ private:
   static void loadSetupFromJson(const json &json_data,
                                 MrtaConfig::Setup &mrta_config_setup);
 
+  static void loadSolverInfoFromJson(const json &json_data,
+                                MrtaConfig::SolverInfo &mrta_config_solver_info);
+
   static void
   loadTasksFromJson(const json &json_data, MrtaConfig::Setup &mrta_config_setup,
                     std::map<std::string, MrtaConfig::Task> &mrta_config_task);
@@ -56,4 +71,10 @@ private:
   static void loadSkillDegradationFromJson(
       const json &json_data, const MrtaConfig::Setup &mrta_config_setup,
       MrtaConfig::Environment &mrta_config_environment);
+
+  inline const static std::map<std::string, MrtaConfig::SOLVER_TYPE>
+      SOLVER_TYPE_MAP = {
+          {solver_config_type_heuristic, MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER},
+          {solver_config_type_milp, MrtaConfig::SOLVER_TYPE::MILP_SOLVER},
+          {solver_config_type_sorted, MrtaConfig::SOLVER_TYPE::SORTED_SOLVER}};
 };

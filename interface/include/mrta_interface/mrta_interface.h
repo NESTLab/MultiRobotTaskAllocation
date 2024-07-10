@@ -1,6 +1,9 @@
 #pragma once
 #include <memory>
 #include <mrta_solvers/mrta_generic_solver.h>
+#include <mrta_solvers/mrta_heuristic_solver.h>
+#include <mrta_solvers/mrta_milp_solver.h>
+#include <mrta_solvers/mrta_sorted_solver.h>
 #include <mrta_utilities/mrta_config.h>
 #include <mrta_utilities/mrta_solution.h>
 #include <stdio.h>
@@ -17,6 +20,33 @@ public:
   inline bool setMrtaSolverMethod(std::shared_ptr<MrtaGenericSolver> solver) {
     solver_method = solver;
     return true;
+  };
+
+  // Some solvers may require something specific which may or may not have been
+  // provided by the user. Hence return 'false' if initialization failed.
+  inline bool setMrtaSolverMethod(MrtaConfig::SolverInfo solver_info) {
+    bool solver_set = true;
+    switch (solver_info.solver_type) {
+    case MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER:
+      solver_method = std::make_shared<MrtaHeuristicSolver>();
+      break;
+
+    case MrtaConfig::SOLVER_TYPE::MILP_SOLVER:
+      solver_method = std::make_shared<MrtaMilpSolver>();
+      break;
+
+    case MrtaConfig::SOLVER_TYPE::SORTED_SOLVER:
+      solver_method = std::make_shared<MrtaSortedSolver>();
+      break;
+
+    default:
+      std::cerr << "Solver given in the config does not match the required "
+                   "list. Supported solvers: HEURISTIC, MILP, SORTED"
+                << std::endl;
+      solver_set = false;
+      break;
+    }
+    return solver_set;
   };
 
   // To check and print if all the essential fields are present in the config
@@ -43,7 +73,8 @@ public:
   void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
                         MrtaSolution::CompleteSolution &ret_complete_solution) {
     solver_method->updateMrtaConfig(mrta_complete_config);
-    solver_method->solveMrtaProblem(mrta_complete_config, ret_complete_solution);
+    solver_method->solveMrtaProblem(mrta_complete_config,
+                                    ret_complete_solution);
   };
 
   /**
@@ -68,8 +99,7 @@ public:
   void
   debugPrintConfigEnvironment(const MrtaConfig::Environment &mrta_environment);
 
-  void debugPrintSolution(
-      const MrtaSolution::CompleteSolution& solution);
+  void debugPrintSolution(const MrtaSolution::CompleteSolution &solution);
 
   void debugPrintSolutionSchedule(
       const std::map<std::string, MrtaSolution::RobotTasksSchedule>
@@ -102,8 +132,8 @@ private:
       const MrtaConfig::CompleteConfig &mrta_complete_config);
   bool
   healthCheckNumOfTasks(const MrtaConfig::CompleteConfig &mrta_complete_config);
-  bool
-  healthCheckNumOfSkills(const MrtaConfig::CompleteConfig &mrta_complete_config);
+  bool healthCheckNumOfSkills(
+      const MrtaConfig::CompleteConfig &mrta_complete_config);
 
   const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
   const int NUMBER_OF_DASHES_PER_INDENT = 3;

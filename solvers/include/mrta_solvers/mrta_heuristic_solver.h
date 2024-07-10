@@ -1,3 +1,4 @@
+#pragma once
 #include <mrta_solvers/mrta_generic_solver.h>
 #include <mrta_utilities/mrta_config.h>
 

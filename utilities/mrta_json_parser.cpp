@@ -18,16 +18,18 @@ void MrtaJsonParser::parseJsonFile(
     file.close();
 
     loadSetupFromJson(json_data, ret_complete_config.setup);
-    std::cout<<"[INFO] All setup loaded!"<<std::endl;
+    std::cout << "[INFO] All setup loaded!" << std::endl;
+    loadSolverInfoFromJson(json_data, ret_complete_config.solver_info);
+    std::cout << "[INFO] Solver loaded!" << std::endl;
     loadTasksFromJson(json_data, ret_complete_config.setup,
                       ret_complete_config.tasks_map);
-    std::cout<<"[INFO] All tasks loaded!"<<std::endl;
+    std::cout << "[INFO] All tasks loaded!" << std::endl;
     loadRobotsFromJson(json_data, ret_complete_config.setup,
                        ret_complete_config.robots_map);
-    std::cout<<"[INFO] All robots loaded!"<<std::endl;
+    std::cout << "[INFO] All robots loaded!" << std::endl;
     loadSkillDegradationFromJson(json_data, ret_complete_config.setup,
                                  ret_complete_config.environment);
-    std::cout<<"[INFO] All skill degradation rates loaded!"<<std::endl;
+    std::cout << "[INFO] All skill degradation rates loaded!" << std::endl;
     // loadPathSigmas(json_data);
 
   } catch (const std::exception &e) {
@@ -74,6 +76,32 @@ T MrtaJsonParser::getSetupValueFromJson(const json &json_data,
   return loaded_value;
 }
 
+void MrtaJsonParser::loadSolverInfoFromJson(
+    const json &json_data, MrtaConfig::SolverInfo &mrta_config_solver_info) {
+  bool solver_loaded = false;
+  if (json_data.contains(json_solver_info)) {
+    if (json_data[json_solver_info].contains(json_solver_type)) {
+      std::string solver_type_str =
+          json_data[json_solver_info][json_solver_type];
+      std::map<std::string, MrtaConfig::SOLVER_TYPE>::const_iterator
+          solver_type_map_iter = SOLVER_TYPE_MAP.find(solver_type_str);
+      if (solver_type_map_iter != SOLVER_TYPE_MAP.end()) {
+        mrta_config_solver_info.solver_type = solver_type_map_iter->second;
+        solver_loaded = true;
+      }
+    }
+  }
+  if (!solver_loaded) {
+    mrta_config_solver_info.solver_type = MrtaConfig::HEURISTIC_SOLVER;
+  }
+}
+
+/**
+ * @brief NEEDS COMMENTING
+ *
+ * @param json_data
+ * @param mrta_config_setup
+ */
 void MrtaJsonParser::loadSetupFromJson(const json &json_data,
                                        MrtaConfig::Setup &mrta_config_setup) {
 

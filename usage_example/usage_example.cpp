@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]) {
   }
 
   // Set which method do you want to use for solving the problem
-  mrta_interface.setMrtaSolverMethod(std::make_shared<MrtaHeuristicSolver>());
+  mrta_interface.setMrtaSolverMethod(mrta_config.solver_info);
 
   // Solve the problem and provide the solution
   MrtaSolution::CompleteSolution solution;

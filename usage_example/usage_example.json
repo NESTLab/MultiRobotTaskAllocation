@@ -8,6 +8,9 @@
       "use_robot_ends": false,
       "use_stochasticity": false
   },
+  "solver_info": {
+      "solver_type": "HEURISTIC"
+  },
   "tasks": {
       "excavation_task": {
           "pos": {

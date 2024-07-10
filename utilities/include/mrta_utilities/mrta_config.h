@@ -22,6 +22,17 @@ struct Setup {
   std::vector<std::string> all_skill_names;
 };
 
+struct SolverConfig {
+  // Members and methods for SolverConfig
+};
+
+enum SOLVER_TYPE { HEURISTIC_SOLVER, MILP_SOLVER, SORTED_SOLVER };
+
+struct SolverInfo {
+  SOLVER_TYPE solver_type;
+  SolverConfig solver_config;
+};
+
 struct Position {
   double pos_x;
   double pos_y;
@@ -48,6 +59,7 @@ struct Environment {
 
 struct CompleteConfig {
   Setup setup;
+  SolverInfo solver_info;
   Environment environment;
   std::map<std::string, Task> tasks_map;
   std::map<std::string, Robot> robots_map;
