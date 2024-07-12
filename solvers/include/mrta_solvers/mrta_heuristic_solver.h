@@ -63,7 +63,7 @@ private:
    * @brief Is responsible to setup the things required by the class
    *        Example of things to setup:
    *            - Initialize matrices dimentions
-   *            - Distance matrix
+   *            - TravelTime matrix
    *            - Contribution matrix
    *
    */

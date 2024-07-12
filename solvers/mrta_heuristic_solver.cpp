@@ -266,7 +266,7 @@ void MrtaHeuristicSolver::assignTaskToRobot(
   if (task_itr != mrta_complete_config.tasks_map.end()) {
     attendance_time =
         last_task_attendance_time + task_itr->second.duration +
-        robot_distances_vector.at(robot_id)(last_task_id, task_id);
+        robot_travel_times_vector.at(robot_id)(last_task_id, task_id);
   }
   ret_complete_solution.robot_task_schedule_map[robot_name]
       .task_arrival_time_map[task_name] = attendance_time;
@@ -365,7 +365,7 @@ double MrtaHeuristicSolver::predictRobotBatteryAtTask(
   double predicted_battery = 100.0;
   if (task_itr != mrta_complete_config.tasks_map.end()) {
     double travel_time =
-        robot_distances_vector.at(robot_id)(last_task_id, task_id);
+        robot_travel_times_vector.at(robot_id)(last_task_id, task_id);
     double task_exec_time = task_itr->second.duration;
     double current_battery = robot_current_battery_level[robot_name];
     double degradation_rate = 0.0;
@@ -408,7 +408,7 @@ void MrtaHeuristicSolver::getSoonestRobotTaskPair(
     int task_id = robot_task_id_pair.second;
     int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
     double travel_dist =
-        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+        robot_travel_times_vector.at(robot_id).coeff(last_task_id, task_id);
     double last_task_start_time = task_start_time.at(last_task_id);
     const std::string &last_task_name =
         mrta_complete_config->setup.all_destination_names.at(task_id);
@@ -435,7 +435,7 @@ void MrtaHeuristicSolver::getNearestRobotTaskPair(
     int task_id = robot_task_id_pair.second;
     int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
     double travel_dist =
-        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+        robot_travel_times_vector.at(robot_id).coeff(last_task_id, task_id);
     if (travel_dist < min_travel_dist) {
       min_travel_dist = travel_dist;
       ret_chosen_robot_task_pair.first = robot_id;
@@ -533,7 +533,7 @@ int MrtaHeuristicSolver::getEarliestArrivingRobot(
   for (const auto &robot_id : threshold_crossing_robots_vector) {
     int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
     double travel_dist =
-        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+        robot_travel_times_vector.at(robot_id).coeff(last_task_id, task_id);
     double last_task_start_time = task_start_time.at(last_task_id);
     const std::string &last_task_name =
         mrta_complete_config->setup.all_destination_names.at(task_id);
@@ -557,7 +557,7 @@ int MrtaHeuristicSolver::getClosestRobotToTask(
   for (const auto &robot_id : threshold_crossing_robots_vector) {
     int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
     double travel_dist =
-        robot_distances_vector.at(robot_id).coeff(last_task_id, task_id);
+        robot_travel_times_vector.at(robot_id).coeff(last_task_id, task_id);
     if (travel_dist < min_travel_dist) {
       min_travel_dist = travel_dist;
       picked_robot_id = robot_id;

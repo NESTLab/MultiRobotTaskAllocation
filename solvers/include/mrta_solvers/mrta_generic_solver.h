@@ -52,7 +52,7 @@ protected:
       for (auto &robot_task_att : robot_task_id_attendance_sequence) {
         robot_task_att = std::vector<int>(1, START_ID);
       }
-      initializeDistanceTensor();
+      initializeTravelTimeTensor();
       task_start_time = std::vector<double>(
           mrta_complete_config->setup.number_of_destinations, 0.0);
       initializeTaskRequirementMatrix(mrta_complete_config_in);
@@ -101,18 +101,18 @@ protected:
 
   MrtaConfig::CompleteConfig const *mrta_complete_config;
   Eigen::MatrixXd task_requirements_matrix;
-  std::vector<Eigen::MatrixXd> robot_distances_vector;
+  std::vector<Eigen::MatrixXd> robot_travel_times_vector;
 
   std::vector<std::vector<int>> robot_task_id_attendance_sequence;
   std::vector<double> task_start_time;
   std::map<std::string, std::map<std::string, double>>
       robot_task_attendance_times_map;
 
-  void initializeDistanceTensor();
+  void initializeTravelTimeTensor();
 
-  void putDistancesForRobot(int robot_id,
-                            Eigen::MatrixXd &ret_i_distance_matrix);
-  double getPureDistance(const MrtaConfig::Position &task_1_position,
+  void putTravelTimesForRobot(int robot_id,
+                            Eigen::MatrixXd &ret_i_travel_time_matrix);
+  double getPureTravelTime(const MrtaConfig::Position &task_1_position,
                          const MrtaConfig::Position &task_2_position);
 
   friend class MrtaInterface;
