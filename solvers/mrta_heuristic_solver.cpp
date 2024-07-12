@@ -28,8 +28,17 @@ void MrtaHeuristicSolver::solveMrtaProblem(
   /////// Phase 1: Select a pair of robot and tasks ///////
   /////////////////////////////////////////////////////////
   while (contribution_array.maxCoeff() > ZERO) {
-    std::pair<int, int> selected_robot_task_pair;
-    getSelectedRobotTaskPair(selected_robot_task_pair);
+    std::pair<int, int> selected_robot_task_pair =
+        std::make_pair(IMPOSSIBLE_ROBOT, IMPOSSIBLE_TASK);
+    getSelectedRobotTaskPair(mrta_complete_config, selected_robot_task_pair);
+    if (selected_robot_task_pair ==
+        std::make_pair(IMPOSSIBLE_ROBOT, IMPOSSIBLE_TASK)) {
+      std::cerr << "The given setup is infeasible. Please make sure that the "
+                   "given setup has a feasible solution."
+                << std::endl;
+      throw;
+      break;
+    }
     assignTaskToRobot(mrta_complete_config, ret_complete_solution,
                       selected_robot_task_pair.first,
                       selected_robot_task_pair.second);
@@ -92,6 +101,18 @@ void MrtaHeuristicSolver::setupEnvironment(
 
   robot_skills_reported_at_tasks = Eigen::Tensor<double, 3>(
       number_of_robots, number_of_destinations, number_of_skills);
+
+  for (const auto &robot_map_iter : mrta_complete_config.robots_map) {
+    std::string robot_name = robot_map_iter.first;
+    std::map<std::string, double>::const_iterator battery_skill_iter =
+        robot_map_iter.second.skillset.find(
+            MrtaConfig::StdSkillNames::BATTERY_SKILL);
+    double battery_level =
+        battery_skill_iter != robot_map_iter.second.skillset.end()
+            ? battery_skill_iter->second
+            : 100;
+    robot_current_battery_level[robot_name] = battery_level;
+  }
 }
 
 void MrtaHeuristicSolver::refineCoalition(
@@ -100,9 +121,9 @@ void MrtaHeuristicSolver::refineCoalition(
     std::vector<int> &robots_in_coalition, int task_id) {
   for (size_t it = 0; it < robots_in_coalition.size(); ++it) {
     size_t it_in_vec = (heuristic_method_config.delete_superfluous ==
-                    DELETE_SUPERFLUOUS::EARLIEST_ROBOT)
-                       ? it
-                       : robots_in_coalition.size() - it - 1;
+                        DELETE_SUPERFLUOUS::EARLIEST_ROBOT)
+                           ? it
+                           : robots_in_coalition.size() - it - 1;
 
     int robot_id = robots_in_coalition.at(it_in_vec);
     const std::string &robot_name =
@@ -203,8 +224,6 @@ void MrtaHeuristicSolver::assignTaskToRobot(
   const std::string &last_task_name =
       mrta_complete_config.setup.all_destination_names.at(last_task_id);
 
-  robot_task_id_attendance_sequence.at(robot_id).push_back(task_id);
-
   std::map<std::string, MrtaConfig::Robot>::const_iterator robot_itr =
       mrta_complete_config.robots_map.find(robot_name);
 
@@ -235,6 +254,11 @@ void MrtaHeuristicSolver::assignTaskToRobot(
     }
   }
 
+  robot_current_battery_level[robot_name] =
+      predictRobotBatteryAtTask(mrta_complete_config, robot_id, task_id);
+
+  robot_task_id_attendance_sequence.at(robot_id).push_back(task_id);
+
   double last_task_attendance_time =
       robot_task_attendance_times_map[robot_name][last_task_name];
 
@@ -250,43 +274,50 @@ void MrtaHeuristicSolver::assignTaskToRobot(
 }
 
 void MrtaHeuristicSolver::getSelectedRobotTaskPair(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
     std::pair<int, int> &ret_selected_robot_task_pair) {
 
   std::vector<std::pair<int, int>> candidate_robot_task_id_pairs;
-  getCandidateRobotTaskPairs(candidate_robot_task_id_pairs);
+  getCandidateRobotTaskPairs(mrta_complete_config,
+                             candidate_robot_task_id_pairs);
 
   getChosenRobotTaskPair(candidate_robot_task_id_pairs,
                          ret_selected_robot_task_pair);
 }
 
 void MrtaHeuristicSolver::getCandidateRobotTaskPairs(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
   if (heuristic_method_config.phase_i_config.selection_list_config ==
       SELECTION_LIST::ONE_SKILL)
-    getRobotTaskPairsWithMinOneContributions(ret_candidate_robot_task_pairs);
+    getRobotTaskPairsWithMinOneContributions(mrta_complete_config,
+                                             ret_candidate_robot_task_pairs);
   else if (heuristic_method_config.phase_i_config.selection_list_config ==
            SELECTION_LIST::MAX_SKILL)
-    getRobotTaskPairsWithMaxContributions(ret_candidate_robot_task_pairs);
+    getRobotTaskPairsWithMaxContributions(mrta_complete_config,
+                                          ret_candidate_robot_task_pairs);
   else
     throw std::invalid_argument("UNKNOWN selection priority set");
 }
 
 void MrtaHeuristicSolver::getRobotTaskPairsWithMinOneContributions(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
   double threshold = 1.0;
   getRequiredRobotTaskWithContributionsAboveThreshold(
-      threshold, ret_candidate_robot_task_pairs);
+      mrta_complete_config, threshold, ret_candidate_robot_task_pairs);
 }
 
 void MrtaHeuristicSolver::getRobotTaskPairsWithMaxContributions(
+    const MrtaConfig::CompleteConfig &mrta_complete_config,
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
   double max_contribution = contribution_array.maxCoeff();
   getRequiredRobotTaskWithContributionsAboveThreshold(
-      max_contribution, ret_candidate_robot_task_pairs);
+      mrta_complete_config, max_contribution, ret_candidate_robot_task_pairs);
 }
 
 void MrtaHeuristicSolver::getRequiredRobotTaskWithContributionsAboveThreshold(
-    double threshold,
+    const MrtaConfig::CompleteConfig &mrta_complete_config, double threshold,
     std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs) {
   Eigen::MatrixXi mask =
       contribution_array.array().unaryExpr([threshold](double val) {
@@ -295,10 +326,61 @@ void MrtaHeuristicSolver::getRequiredRobotTaskWithContributionsAboveThreshold(
   for (int i = 0; i < mask.rows(); ++i) {
     for (int j = 0; j < mask.cols(); ++j) {
       if (mask(i, j)) {
-        ret_candidate_robot_task_pairs.push_back(std::make_pair(i, j));
+        double battery_prediction_at_task_end =
+            predictRobotBatteryAtTask(mrta_complete_config, i, j);
+        std::string task_name =
+            mrta_complete_config.setup.all_destination_names.at(j);
+        double expected_task_battery_level = ZERO;
+        std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+            mrta_complete_config.tasks_map.find(task_name);
+        if (task_itr != mrta_complete_config.tasks_map.end()) {
+          std::map<std::string, double>::const_iterator expected_battery_itr =
+              task_itr->second.skillset.find(
+                  MrtaConfig::StdSkillNames::BATTERY_SKILL);
+          if (expected_battery_itr != task_itr->second.skillset.end()) {
+            expected_task_battery_level = expected_battery_itr->second;
+          }
+        }
+        if (battery_prediction_at_task_end > expected_task_battery_level)
+          ret_candidate_robot_task_pairs.push_back(std::make_pair(i, j));
       }
     }
   }
+}
+
+double MrtaHeuristicSolver::predictRobotBatteryAtTask(
+    const MrtaConfig::CompleteConfig &mrta_complete_config, int robot_id,
+    int task_id) {
+  int last_task_id = robot_task_id_attendance_sequence.at(robot_id).back();
+  const std::string &robot_name =
+      mrta_complete_config.setup.all_robot_names.at(robot_id);
+  const std::string &task_name =
+      mrta_complete_config.setup.all_destination_names.at(task_id);
+  const std::string &last_task_name =
+      mrta_complete_config.setup.all_destination_names.at(last_task_id);
+  double last_task_attendance_time =
+      robot_task_attendance_times_map[robot_name][last_task_name];
+  std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+      mrta_complete_config.tasks_map.find(task_name);
+  double predicted_battery = 100.0;
+  if (task_itr != mrta_complete_config.tasks_map.end()) {
+    double travel_time =
+        robot_distances_vector.at(robot_id)(last_task_id, task_id);
+    double task_exec_time = task_itr->second.duration;
+    double current_battery = robot_current_battery_level[robot_name];
+    double degradation_rate = 0.0;
+    std::map<std::string, double>::const_iterator battery_degradation_iter =
+        mrta_complete_config.environment.skill_degradation_rate_map.find(
+            MrtaConfig::StdSkillNames::BATTERY_SKILL);
+    if (battery_degradation_iter !=
+        mrta_complete_config.environment.skill_degradation_rate_map.end()) {
+      degradation_rate = battery_degradation_iter->second;
+    }
+
+    double battery_drain = (travel_time + task_exec_time) * degradation_rate;
+    predicted_battery = current_battery - battery_drain;
+  }
+  return predicted_battery;
 }
 
 void MrtaHeuristicSolver::getChosenRobotTaskPair(

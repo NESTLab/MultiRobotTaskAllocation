@@ -39,6 +39,12 @@ private:
   int number_of_robots;
   int number_of_destinations;
   int number_of_skills;
+  const int IMPOSSIBLE_ROBOT = -100, IMPOSSIBLE_TASK = -100;
+  std::map<std::string, double> robot_current_battery_level;
+
+  double predictRobotBatteryAtTask(
+      const MrtaConfig::CompleteConfig &mrta_complete_config, int robot_id,
+      int task_id);
 
   void updateWorldStatus(){};
 
@@ -63,20 +69,24 @@ private:
    */
   void setupEnvironment(const MrtaConfig::CompleteConfig &mrta_complete_config);
 
-  void
-  getSelectedRobotTaskPair(std::pair<int, int> &ret_selected_robot_task_pair);
+  void getSelectedRobotTaskPair(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
+      std::pair<int, int> &ret_selected_robot_task_pair);
 
   void getRobotTaskPairsWithMinOneContributions(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
       std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs);
 
   void getRobotTaskPairsWithMaxContributions(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
       std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs);
 
   void getRequiredRobotTaskWithContributionsAboveThreshold(
-      double threshold,
+      const MrtaConfig::CompleteConfig &mrta_complete_config, double threshold,
       std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs);
 
   void getCandidateRobotTaskPairs(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
       std::vector<std::pair<int, int>> &ret_candidate_robot_task_pairs);
 
   void getChosenRobotTaskPair(

@@ -6,6 +6,10 @@
 #include <vector>
 
 namespace MrtaConfig {
+namespace StdSkillNames{
+  static const std::string BATTERY_SKILL = "BATTERY";
+}
+
 struct Setup {
   int number_of_robots;
   int number_of_destinations;
