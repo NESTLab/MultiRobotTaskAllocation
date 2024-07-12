@@ -304,11 +304,16 @@ void MrtaJsonParser::loadRobotsFromJson(
       mrta_config_robot_current.position.pos_y =
           double(current_robot_data.value()[json_pos]["y"]);
 
-      // Retrieve and set the robot's location
+      // Retrieve and set the robot's end location
       mrta_config_robot_current.desired_end_position.pos_x =
           double(current_robot_data.value()[json_desired_end_position]["x"]);
       mrta_config_robot_current.desired_end_position.pos_y =
           double(current_robot_data.value()[json_desired_end_position]["y"]);
+
+      mrta_config_robot_current.velocity =
+          current_robot_data.value().contains(json_velocity)
+              ? double(current_robot_data.value()[json_velocity])
+              : default_velocity;
 
       // Iterate over the skills required for the robot
       for (const auto &c : current_robot_data.value()[json_skillset].items()) {

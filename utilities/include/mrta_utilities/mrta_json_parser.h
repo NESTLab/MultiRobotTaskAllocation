@@ -23,6 +23,7 @@ private:
   inline const static std::string json_desired_end_position =
       "desired_end_position";
   inline const static std::string json_duration = "duration";
+  inline const static std::string json_velocity = "velocity";
   inline const static std::string json_skillset = "skillset";
   inline const static std::string json_epsilon = "epsilon";
   inline const static std::string json_mean_percent = "mean_percent";
@@ -49,6 +50,7 @@ private:
   inline const static bool default_use_stochasticity = false;
   inline const static double default_epsilon = 0.95;
   inline const static double default_mean_percent = 10;
+  inline const static double default_velocity = 1;
 
   template <typename T>
   static T getSetupValueFromJson(const json &json_data,

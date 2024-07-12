@@ -52,6 +52,7 @@ struct Task {
 struct Robot {
   std::string robot_name;
   Position position;
+  double velocity;
   Position desired_end_position;
   std::map<std::string, double> skillset;
 };

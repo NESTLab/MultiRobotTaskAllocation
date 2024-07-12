@@ -102,6 +102,9 @@ void MrtaInterface::debugPrintConfigRobotsMap(
                          indent_level);
     --indent_level;
 
+    debugPrintSingleLine("velocity", robot.second.velocity,
+                         indent_level);
+
     debugPrintSingleLine("skillset", "", indent_level);
     ++indent_level;
     for (const auto &skill : robot.second.skillset) {
