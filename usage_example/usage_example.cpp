@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]) {
   MrtaInterface mrta_interface;
 
   // Debug and check if the config file is being interpreted correctly
-  // mrta_interface.debugPrintConfigCompleteConfig(mrta_config);
+  mrta_interface.debugPrintConfigCompleteConfig(mrta_config);
 
   // Make sure that the config file is good enough to be used for solving
   bool health_check = mrta_interface.healthCheckConfig(mrta_config);

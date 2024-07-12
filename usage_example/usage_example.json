@@ -18,7 +18,7 @@
               "DIGGING": 0,
               "SCANNING": 0,
               "HAULING": 0,
-              "BATTERY": 99
+              "BATTERY": 50
           },
           "duration": 0.2
       },
@@ -91,6 +91,7 @@
             "x": 0.0,
             "y": -10
           },
+          "velocity": 10,
           "skillset": {
               "BATTERY": 100,
               "DIGGING": 0,

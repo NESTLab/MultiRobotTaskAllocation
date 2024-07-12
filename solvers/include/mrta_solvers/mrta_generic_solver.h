@@ -113,7 +113,8 @@ protected:
   void putTravelTimesForRobot(int robot_id,
                             Eigen::MatrixXd &ret_i_travel_time_matrix);
   double getPureTravelTime(const MrtaConfig::Position &task_1_position,
-                         const MrtaConfig::Position &task_2_position);
+                         const MrtaConfig::Position &task_2_position,
+                         double velocity = 1.0);
 
   friend class MrtaInterface;
 };

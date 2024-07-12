@@ -12,29 +12,33 @@
         "Robot_2": {
             "robot_id": "Robot_2",
             "task_arrival_time_map": {
-                "Destination_3": 10.2,
-                "END": 0.0
-            },
-            "task_sequence_map": {
-                "0": "Destination_3",
-                "1": "END"
-            }
-        },
-        "Robot_3": {
-            "robot_id": "Robot_3",
-            "task_arrival_time_map": {
                 "END": 0.0
             },
             "task_sequence_map": {
                 "0": "END"
             }
+        },
+        "Robot_3": {
+            "robot_id": "Robot_3",
+            "task_arrival_time_map": {
+                "Destination_1": 4.42842712474619,
+                "Destination_2": 1.2,
+                "Destination_3": 2.8142135623730953,
+                "END": 0.0
+            },
+            "task_sequence_map": {
+                "0": "Destination_2",
+                "1": "Destination_3",
+                "2": "Destination_1",
+                "3": "END"
+            }
         }
     },
     "solution_quality": {
-        "maximum_robot_schedule": -1.4460046629940949e+62,
+        "maximum_robot_schedule": -4.32852298792932e+99,
         "result_description": "",
-        "result_status": 202247424,
+        "result_status": 247772992,
         "solver_runtime": "",
-        "sum_of_all_robot_schedules": 8.69091150182e-311
+        "sum_of_all_robot_schedules": 8.6911795628713e-311
     }
 }
