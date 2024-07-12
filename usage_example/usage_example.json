@@ -2,50 +2,55 @@
   "setup": {
       "robots": 3,
       "tasks": 3,
-      "num_skills": 3,
+      "num_skills": 4,
       "mean_percent": 10,
       "epsilon": 0.95,
       "use_robot_ends": false,
       "use_stochasticity": false
   },
-  "solver_info": {
-      "solver_type": "HEURISTIC"
-  },
   "tasks": {
-      "excavation_task": {
+      "Destination_1": {
           "pos": {
               "x": 10,
               "y": 10
           },
           "skillset": {
-              "DIGGING": 1
+              "DIGGING": 0,
+              "SCANNING": 0,
+              "HAULING": 0,
+              "BATTERY": 99
           },
           "duration": 0.2
       },
-      "gem_retrieval": {
+      "Destination_2": {
         "pos": {
           "x": 10,
           "y": -10
         },
         "skillset": {
-          "DIGGING": 1,
-          "HAULING": 1
+          "DIGGING": 0,
+          "HAULING": 0,
+          "SCANNING": 0,
+          "BATTERY": 1
         },
         "duration": 0.2
     },
-      "item_recovery": {
+      "Destination_3": {
           "pos": {
             "x": -0.00,
             "y": 0.00
           },
           "skillset": {
-            "HAULING": 1
+            "HAULING": 0,
+            "SCANNING": 0,
+            "DIGGING": 0,
+            "BATTERY": 1
           },
           "duration": 0.2
         }
   },
   "robots": {
-      "leo_0": {
+      "Robot_1": {
           "pos": {
             "x": -10.833504408,
             "y": 9.0904
@@ -55,11 +60,13 @@
             "y": 9.0904
           },
           "skillset": {
-            "DIGGING": 1,
-            "HAULING": 1
+            "BATTERY": 100,
+            "DIGGING": 0,
+            "HAULING": 0,
+            "SCANNING": 0
           }
         },
-        "leo_1": {
+        "Robot_2": {
           "pos": {
             "x": -10,
             "y": -0
@@ -69,10 +76,13 @@
             "y": -0
           },
           "skillset": {
-            "HAULING": 1
+            "BATTERY": 100,
+            "HAULING": 0,
+            "SCANNING": 0,
+            "DIGGING": 0
           }
         },
-        "leo_2": {
+        "Robot_3": {
           "pos": {
             "x": 0.0,
             "y": -10
@@ -82,12 +92,14 @@
             "y": -10
           },
           "skillset": {
-              "DIGGING": 1,
-              "SCANNING": 1
+              "BATTERY": 100,
+              "DIGGING": 0,
+              "HAULING": 0
           }
       }
   },
   "skill_degradation_rates": {
-    "DIGGING": 0.0
+    "DIGGING": 0.0,
+    "BATTERY": 0.1
   }
 }

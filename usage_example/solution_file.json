@@ -1,46 +1,40 @@
 {
     "robots_schedule": {
-        "leo_0": {
-            "robot_id": "leo_0",
+        "Robot_1": {
+            "robot_id": "Robot_1",
             "task_arrival_time_map": {
-                "END": 2.1220281696e-314
+                "END": 0.0
             },
             "task_sequence_map": {
                 "0": "END"
             }
         },
-        "leo_1": {
-            "robot_id": "leo_1",
+        "Robot_2": {
+            "robot_id": "Robot_2",
             "task_arrival_time_map": {
-                "END": 46.90281539872885,
-                "gem_retrieval": 24.54213562373095,
-                "item_recovery": 10.2
+                "Destination_3": 10.2,
+                "END": 0.0
             },
             "task_sequence_map": {
-                "0": "item_recovery",
-                "1": "gem_retrieval",
-                "2": "END"
+                "0": "Destination_3",
+                "1": "END"
             }
         },
-        "leo_2": {
-            "robot_id": "leo_2",
+        "Robot_3": {
+            "robot_id": "Robot_3",
             "task_arrival_time_map": {
-                "END": 67.10281539872884,
-                "excavation_task": 44.742135623730945,
-                "gem_retrieval": 10.2
+                "END": 0.0
             },
             "task_sequence_map": {
-                "0": "gem_retrieval",
-                "1": "excavation_task",
-                "2": "END"
+                "0": "END"
             }
         }
     },
     "solution_quality": {
-        "maximum_robot_schedule": 2.1220281696e-314,
+        "maximum_robot_schedule": -1.4460046629940949e+62,
         "result_description": "",
-        "result_status": 223454208,
+        "result_status": 202247424,
         "solver_runtime": "",
-        "sum_of_all_robot_schedules": 6.9122382173682e-310
+        "sum_of_all_robot_schedules": 8.69091150182e-311
     }
 }
