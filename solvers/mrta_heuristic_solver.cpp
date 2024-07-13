@@ -85,6 +85,26 @@ void MrtaHeuristicSolver::solveMrtaProblem(
           mrta_complete_config.setup.all_destination_names.at(task_id);
 
       robot_task_attendance_times_map[robot_name][task_name] = task_start_time;
+      std::map<std::string, MrtaConfig::Robot>::const_iterator robot_itr =
+          mrta_complete_config.robots_map.find(robot_name);
+      double robot_init_battery = 100;
+      double battery_deg_rate = 0.0;
+      if (robot_itr != mrta_complete_config.robots_map.end()) {
+        std::map<std::string, double>::const_iterator battery_iter =
+            robot_itr->second.skillset.find(
+                MrtaConfig::StdSkillNames::BATTERY_SKILL);
+        if (battery_iter != robot_itr->second.skillset.end())
+          robot_init_battery = battery_iter->second;
+      }
+      std::map<std::string, double>::const_iterator battery_deg_iter =
+          mrta_complete_config.environment.skill_degradation_rate_map.find(
+              MrtaConfig::StdSkillNames::BATTERY_SKILL);
+      if (battery_deg_iter !=
+          mrta_complete_config.environment.skill_degradation_rate_map.end()) {
+        battery_deg_rate = battery_deg_iter->second;
+      }
+      robot_current_battery_level[robot_name] =
+          robot_init_battery - task_start_time * battery_deg_rate;
     }
   }
 
@@ -360,13 +380,19 @@ double MrtaHeuristicSolver::predictRobotBatteryAtTask(
       mrta_complete_config.setup.all_destination_names.at(last_task_id);
   double last_task_attendance_time =
       robot_task_attendance_times_map[robot_name][last_task_name];
+  std::map<std::string, MrtaConfig::Task>::const_iterator last_task_itr =
+      mrta_complete_config.tasks_map.find(last_task_name);
+  double last_task_duration =
+      last_task_itr != mrta_complete_config.tasks_map.end()
+          ? last_task_itr->second.duration
+          : 0.0;
   std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
       mrta_complete_config.tasks_map.find(task_name);
   double predicted_battery = 100.0;
   if (task_itr != mrta_complete_config.tasks_map.end()) {
     double travel_time =
         robot_travel_times_vector.at(robot_id)(last_task_id, task_id);
-    double task_exec_time = task_itr->second.duration;
+    double task_duration = task_itr->second.duration;
     double current_battery = robot_current_battery_level[robot_name];
     double degradation_rate = 0.0;
     std::map<std::string, double>::const_iterator battery_degradation_iter =
@@ -377,7 +403,8 @@ double MrtaHeuristicSolver::predictRobotBatteryAtTask(
       degradation_rate = battery_degradation_iter->second;
     }
 
-    double battery_drain = (travel_time + task_exec_time) * degradation_rate;
+    double battery_drain =
+        (last_task_duration + travel_time + task_duration) * degradation_rate;
     predicted_battery = current_battery - battery_drain;
   }
   return predicted_battery;
@@ -464,15 +491,34 @@ void MrtaHeuristicSolver::updateContributionsFromConfig() {
       for (int j = START_ID + 1;           // Skipping the START task
            j < number_of_destinations - 1; // Skipping the END task
            ++j) {
-        for (int s = 0; s < mrta_complete_config->setup.number_of_skills; ++s) {
-          const std::string &skill_name =
-              mrta_complete_config->setup.all_skill_names.at(s);
-          std::map<std::string, double>::const_iterator robot_skill_itr =
-              robot_info_itr->second.skillset.find(skill_name);
-          if (robot_skill_itr != robot_info_itr->second.skillset.end())
-            if (robot_skill_itr->second >= task_requirements_matrix(j, s))
-              if (task_requirements_matrix(j, s) > ZERO)
-                ++contribution_array(i, j);
+        double predicted_battery_at_task_end =
+            predictRobotBatteryAtTask(*mrta_complete_config, i, j);
+
+        double expected_task_battery_level = ZERO;
+        std::string task_name =
+            mrta_complete_config->setup.all_destination_names.at(j);
+        std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
+            mrta_complete_config->tasks_map.find(task_name);
+        if (task_itr != mrta_complete_config->tasks_map.end()) {
+          std::map<std::string, double>::const_iterator expected_battery_itr =
+              task_itr->second.skillset.find(
+                  MrtaConfig::StdSkillNames::BATTERY_SKILL);
+          if (expected_battery_itr != task_itr->second.skillset.end()) {
+            expected_task_battery_level = expected_battery_itr->second;
+          }
+        }
+        if (predicted_battery_at_task_end > expected_task_battery_level) {
+          for (int s = 0; s < mrta_complete_config->setup.number_of_skills;
+               ++s) {
+            const std::string &skill_name =
+                mrta_complete_config->setup.all_skill_names.at(s);
+            std::map<std::string, double>::const_iterator robot_skill_itr =
+                robot_info_itr->second.skillset.find(skill_name);
+            if (robot_skill_itr != robot_info_itr->second.skillset.end())
+              if (robot_skill_itr->second >= task_requirements_matrix(j, s))
+                if (task_requirements_matrix(j, s) > ZERO)
+                  ++contribution_array(i, j);
+          }
         }
       }
   }
