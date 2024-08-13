@@ -3,7 +3,7 @@
 
 class MrtaDecentralizedHssSolver : public MrtaDecentralizedGenericSolver {
 public:
-  MrtaDecentralizedHssSolver(const std::string &robot_name);
+  MrtaDecentralizedHssSolver(const std::string &robot_name){};
   ~MrtaDecentralizedHssSolver(){};
 
 private:
@@ -12,13 +12,15 @@ private:
     mrta_complete_config = &mrta_complete_config_in;
   };
 
-  bool solveOneIteration() override;
+  bool solveOneIteration(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
+      MrtaSolution::CompleteSolution &ret_complete_solution) override;
 
   void updateWorldStatus() override{};
 
-  bool areAllTasksSatisfied(){};
+  bool areAllTasksSatisfied(){return false;};
 
-  bool checkConvergence(){};
+  bool checkConvergence(){return false;};
 
   /////////////////////////////////////////////////////////////
   /////////  T A S K   I N C L U S I O N   P H A S E  /////////
@@ -45,7 +47,7 @@ private:
 
   void updateKnowledge(){};
 
-  bool hasEveryoneConverged(){};
+  bool hasEveryoneConverged(){return false;};
 
   void defineTaskSequence(){};
 

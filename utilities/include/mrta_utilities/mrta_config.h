@@ -30,7 +30,7 @@ struct SolverConfig {
   // Members and methods for SolverConfig
 };
 
-enum SOLVER_TYPE { HEURISTIC_SOLVER, MILP_SOLVER, SORTED_SOLVER };
+enum SOLVER_TYPE { DECENTRALIZED_HSS_SOLVER, HEURISTIC_SOLVER, MILP_SOLVER, SORTED_SOLVER };
 
 struct SolverInfo {
   SOLVER_TYPE solver_type;

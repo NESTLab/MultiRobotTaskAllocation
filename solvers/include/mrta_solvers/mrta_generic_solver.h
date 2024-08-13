@@ -9,7 +9,7 @@ class MrtaGenericSolver {
 public:
   MrtaGenericSolver(/* args */){};
   ~MrtaGenericSolver(){
-    delete mrta_complete_config;
+    // delete mrta_complete_config;
   };
 
 protected:

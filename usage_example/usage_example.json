@@ -8,6 +8,9 @@
       "use_robot_ends": false,
       "use_stochasticity": false
   },
+  "solver_info": {
+    "solver_type": "DECENTRALIZED_HSS"
+  },
   "tasks": {
       "Destination_1": {
           "pos": {
@@ -15,10 +18,9 @@
               "y": 10
           },
           "skillset": {
-              "DIGGING": 0,
+              "DIGGING": 1,
               "SCANNING": 0,
-              "HAULING": 0,
-              "BATTERY": 50
+              "HAULING": 1
           },
           "duration": 0.2
       },
@@ -29,9 +31,8 @@
         },
         "skillset": {
           "DIGGING": 0,
-          "HAULING": 0,
-          "SCANNING": 0,
-          "BATTERY": 1
+          "HAULING": 1,
+          "SCANNING": 1
         },
         "duration": 0.2
     },
@@ -42,9 +43,8 @@
           },
           "skillset": {
             "HAULING": 0,
-            "SCANNING": 0,
-            "DIGGING": 0,
-            "BATTERY": 1
+            "SCANNING": 1,
+            "DIGGING": 1
           },
           "duration": 0.2
         }
@@ -59,11 +59,12 @@
             "x": -10.833504408,
             "y": 9.0904
           },
+          "velocity": 0.1,
           "skillset": {
             "BATTERY": 100,
             "DIGGING": 0,
-            "HAULING": 0,
-            "SCANNING": 0
+            "HAULING": 1,
+            "SCANNING": 1
           }
         },
         "Robot_2": {
@@ -75,11 +76,12 @@
             "x": -10,
             "y": -0
           },
+          "velocity": 0.1,
           "skillset": {
             "BATTERY": 100,
             "HAULING": 0,
-            "SCANNING": 0,
-            "DIGGING": 0
+            "SCANNING": 1,
+            "DIGGING": 1
           }
         },
         "Robot_3": {
@@ -91,11 +93,11 @@
             "x": 0.0,
             "y": -10
           },
-          "velocity": 10,
+          "velocity": 0.1,
           "skillset": {
-              "BATTERY": 100,
-              "DIGGING": 0,
-              "HAULING": 0
+              "BATTERY": 15,
+              "DIGGING": 1,
+              "HAULING": 1
           }
       }
   },

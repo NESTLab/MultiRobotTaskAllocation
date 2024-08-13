@@ -4,9 +4,10 @@
 
 class MrtaDecentralizedGenericSolver : public MrtaGenericSolver {
 public:
-  MrtaDecentralizedGenericSolver(const std::string &robot_name);
+  MrtaDecentralizedGenericSolver(){};
+  MrtaDecentralizedGenericSolver(const std::string &robot_name): MrtaGenericSolver(), robot_name(robot_name){};
   ~MrtaDecentralizedGenericSolver(){
-    // delete others_solutions;
+      // delete others_solutions;
   };
 
 protected:
@@ -16,13 +17,11 @@ protected:
   void solveMrtaProblem(
       const MrtaConfig::CompleteConfig &mrta_complete_config,
       MrtaSolution::CompleteSolution &ret_complete_solution) override {
-    throw std::domain_error(
-        "This function only works for the centralized solvers, whereas "
-        "currently a decentralized solver is being used. Please use function "
-        "`solveOneIteration()` in decentralized mode.");
+    solveOneIteration(mrta_complete_config, ret_complete_solution);
+    ++timestep;
   };
 
-  void updateWorldStatus() override {};
+  void updateWorldStatus() override{};
 
   virtual bool checkConvergence() = 0;
 
@@ -30,19 +29,15 @@ protected:
    * @brief: solveOneIteration()
    *
    */
-  virtual bool solveOneIteration() = 0;
+  virtual bool
+  solveOneIteration(const MrtaConfig::CompleteConfig &mrta_complete_config,
+                    MrtaSolution::CompleteSolution &ret_complete_solution) = 0;
 
   void updateKnowledgeAboutOtherAgentsSchedules(
       const std::set<const MrtaSolution::CompleteSolution &>
           &others_solutions_in) {
-            // others_solutions = &others_solutions_in;
-          }
-
-  bool step() {
-    solveOneIteration();
-    ++timestep;
-    return converged;
-  };
+    // others_solutions = &others_solutions_in;
+  }
 
   std::set<std::string> relevant_tasks_names;
 

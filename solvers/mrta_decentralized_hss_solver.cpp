@@ -1,6 +1,8 @@
 #include <mrta_solvers/mrta_decentralized_hss_solver.h>
 
-bool MrtaDecentralizedHssSolver::solveOneIteration() {
+bool MrtaDecentralizedHssSolver::solveOneIteration(
+      const MrtaConfig::CompleteConfig &mrta_complete_config,
+      MrtaSolution::CompleteSolution &ret_complete_solution) {
   taskInclusionPhase();
   commAndVarUpdatePhase();
   if ((schedule_convergence_timer > MAX_SCHEDULE_CONVERGENCE_TIME) &&
@@ -26,15 +28,15 @@ void MrtaDecentralizedHssSolver::taskInclusionPhase() {
 
 std::pair<size_t, size_t>
 MrtaDecentralizedHssSolver::getIndexOfPredecessorSuccessorToTask(
-    const std::string &task) {}
+    const std::string &task) {return std::pair<size_t, size_t>();}
 
 size_t MrtaDecentralizedHssSolver::getTaskInsertionIndex(
     const std::vector<std::string> &curr_path_i_A, const std::string &task,
-    std::pair<size_t, size_t> index_of_pred_succ) {}
+    std::pair<size_t, size_t> index_of_pred_succ) {return size_t(0);}
 
 double MrtaDecentralizedHssSolver::getAfterTaskInsertionCost(
     const std::vector<std::string> &curr_path_i_A, const std::string &task,
-    size_t index) {}
+    size_t index) {return 0.0;}
 
 double MrtaDecentralizedHssSolver::getCost(
-    const std::vector<std::string> &curr_path_i_A) {}
+    const std::vector<std::string> &curr_path_i_A) {return 0.0;}
