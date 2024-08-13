@@ -8,7 +8,9 @@
 class MrtaGenericSolver {
 public:
   MrtaGenericSolver(/* args */){};
-  ~MrtaGenericSolver(){};
+  ~MrtaGenericSolver(){
+    delete mrta_complete_config;
+  };
 
 protected:
   virtual void
