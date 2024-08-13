@@ -2,6 +2,7 @@
 #include <memory>
 #include <mrta_solvers/mrta_generic_solver.h>
 #include <mrta_solvers/mrta_heuristic_solver.h>
+#include <mrta_solvers/mrta_decentralized_hss_solver.h>
 #include <mrta_solvers/mrta_milp_solver.h>
 #include <mrta_solvers/mrta_sorted_solver.h>
 #include <mrta_utilities/mrta_config.h>
@@ -24,7 +25,7 @@ public:
 
   // Some solvers may require something specific which may or may not have been
   // provided by the user. Hence return 'false' if initialization failed.
-  inline bool setMrtaSolverMethod(MrtaConfig::SolverInfo solver_info) {
+  inline bool setMrtaSolverMethod(MrtaConfig::SolverInfo solver_info, const std::string& robot_name="") {
     bool solver_set = true;
     switch (solver_info.solver_type) {
     case MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER:
@@ -37,6 +38,10 @@ public:
 
     case MrtaConfig::SOLVER_TYPE::SORTED_SOLVER:
       solver_method = std::make_shared<MrtaSortedSolver>();
+      break;
+
+    case MrtaConfig::SOLVER_TYPE::DECENTRALIZED_HSS_SOLVER:
+      solver_method = std::make_shared<MrtaDecentralizedHssSolver>(robot_name);
       break;
 
     default:
