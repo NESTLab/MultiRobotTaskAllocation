@@ -8,8 +8,8 @@
 class MrtaGenericSolver {
 public:
   MrtaGenericSolver(/* args */){};
-  ~MrtaGenericSolver(){
-    // delete mrta_complete_config;
+  virtual ~MrtaGenericSolver(){
+      // delete mrta_complete_config;
   };
 
 protected:
@@ -43,7 +43,7 @@ protected:
   int END_ID = 0;
   bool config_initialized = false;
 
-  void
+  virtual void
   updateMrtaConfig(const MrtaConfig::CompleteConfig &mrta_complete_config_in) {
     try {
       config_initialized = true;
@@ -57,52 +57,75 @@ protected:
       initializeTravelTimeTensor();
       task_start_time = std::vector<double>(
           mrta_complete_config->setup.number_of_destinations, 0.0);
-      initializeTaskRequirementMatrix(mrta_complete_config_in);
+      initializeSkillMatrices(mrta_complete_config_in);
     } catch (const std::exception &e) {
       std::cerr << e.what() << '\n';
     }
   };
 
-  void initializeTaskRequirementMatrix(
+  void initializeSkillMatrices(
       const MrtaConfig::CompleteConfig &mrta_complete_config_in) {
     int number_of_destinations =
         mrta_complete_config_in.setup.number_of_destinations;
+    int number_of_robots = mrta_complete_config_in.setup.number_of_robots;
     task_requirements_matrix = Eigen::MatrixXd::Zero(
         mrta_complete_config_in.setup.number_of_destinations,
         mrta_complete_config_in.setup.number_of_skills);
+    robot_skillset_matrix =
+        Eigen::MatrixXd::Zero(mrta_complete_config_in.setup.number_of_robots,
+                              mrta_complete_config_in.setup.number_of_skills);
     for (int skill_id = 0;
          skill_id < mrta_complete_config->setup.all_skill_names.size();
          skill_id++) {
       std::string skill_name =
           mrta_complete_config->setup.all_skill_names.at(skill_id);
+      //
+      // Initialize Robot Skill Matrix
+      for (int i = 0; i < number_of_robots; ++i) {
+        std::string robot_name =
+            mrta_complete_config_in.setup.all_robot_names.at(i);
+        putSkillDataInMatrices(mrta_complete_config->robots_map, robot_name, i,
+                               skill_name, skill_id, robot_skillset_matrix);
+      }
+      //
+      // Initialize Task Requirement Matrix
       for (int j = START_ID + 1;           // Skipping the START task
            j < number_of_destinations - 1; // Skipping the END task
            ++j) {
-        std::map<std::string, MrtaConfig::Task>::const_iterator task_info_itr =
-            mrta_complete_config_in.tasks_map.find(
-                mrta_complete_config_in.setup.all_destination_names.at(j));
-        if (task_info_itr != mrta_complete_config_in.tasks_map.end()) {
-          std::map<std::string, double>::const_iterator task_skill_itr =
-              task_info_itr->second.skillset.find(skill_name);
-          if (task_skill_itr != task_info_itr->second.skillset.end()) {
-            task_requirements_matrix(j, skill_id) = task_skill_itr->second;
-          } else {
-            task_requirements_matrix(j, skill_id) = 0.0;
-          }
-        } else {
-          throw std::runtime_error(
-              "Task " +
-              mrta_complete_config_in.setup.all_destination_names.at(j) +
-              " not found in MRTA Config");
-        }
+        std::string task_name =
+            mrta_complete_config_in.setup.all_destination_names.at(j);
+        putSkillDataInMatrices(mrta_complete_config->tasks_map, task_name, j,
+                               skill_name, skill_id, task_requirements_matrix);
       }
       task_requirements_matrix(START_ID, skill_id) = 0;
       task_requirements_matrix(END_ID, skill_id) = 0;
     }
   }
 
+  template <typename T>
+  void putSkillDataInMatrices(const std::map<std::string, T> &config_map,
+                              const std::string &entity_key, int entity_index,
+                              const std::string &skill_name, int skill_id,
+                              Eigen::MatrixXd &eigen_matrix) {
+    typename std::map<std::string, T>::const_iterator entity_itr =
+        config_map.find(entity_key);
+    if (entity_itr != config_map.end()) {
+      std::map<std::string, double>::const_iterator entity_skill_itr =
+          entity_itr->second.skillset.find(skill_name);
+      if (entity_skill_itr != entity_itr->second.skillset.end()) {
+        eigen_matrix(entity_index, skill_id) = entity_skill_itr->second;
+      } else {
+        eigen_matrix(entity_index, skill_id) = 0.0;
+      }
+    } else {
+      throw std::runtime_error("Entity (Task or Robot) " + entity_key +
+                               " not found in MRTA Config");
+    }
+  }
+
   MrtaConfig::CompleteConfig const *mrta_complete_config;
   Eigen::MatrixXd task_requirements_matrix;
+  Eigen::MatrixXd robot_skillset_matrix;
   std::vector<Eigen::MatrixXd> robot_travel_times_vector;
 
   std::vector<std::vector<int>> robot_task_id_attendance_sequence;
@@ -113,10 +136,10 @@ protected:
   void initializeTravelTimeTensor();
 
   void putTravelTimesForRobot(int robot_id,
-                            Eigen::MatrixXd &ret_i_travel_time_matrix);
+                              Eigen::MatrixXd &ret_i_travel_time_matrix);
   double getPureTravelTime(const MrtaConfig::Position &task_1_position,
-                         const MrtaConfig::Position &task_2_position,
-                         double velocity = 1.0);
+                           const MrtaConfig::Position &task_2_position,
+                           double velocity = 1.0);
 
   friend class MrtaInterface;
 };
