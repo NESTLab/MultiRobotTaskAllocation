@@ -1,5 +1,6 @@
 #pragma once
 #include <mrta_solvers/mrta_decentralized_generic_solver.h>
+#include <unordered_map>
 
 class MrtaDecentralizedHssSolver : public MrtaDecentralizedGenericSolver {
 public:
@@ -43,7 +44,7 @@ private:
   getIndexOfObjectInVector(const std::string &task,
                            const std::vector<std::string> &task_vector) {
     std::vector<std::string>::const_iterator task_iter =
-        getIterToObjectInVector(task_vector,task);
+        getIterToObjectInVector(task_vector, task);
     return getIndexOfObjectInVector(task_iter, task_vector);
   }
 
@@ -53,15 +54,18 @@ private:
     return task_iter != task_vector.end();
   }
 
-  inline int
-  isObjectInVector(const std::string &task,
-                           const std::vector<std::string> &task_vector) {
+  inline int isObjectInVector(const std::string &task,
+                              const std::vector<std::string> &task_vector) {
     std::vector<std::string>::const_iterator task_iter =
-        getIterToObjectInVector(task_vector,task);
+        getIterToObjectInVector(task_vector, task);
     return isObjectInVector(task_iter, task_vector);
   }
 
   double getCost(const std::vector<std::string> &curr_path_i_A);
+
+  double getCostOfTravelC1(const std::vector<std::string> &curr_path_i_A);
+
+  double getCostOfAttendanceC2(const std::vector<std::string> &curr_path_i_A);
 
   double
   getAfterTaskInsertionCost(const std::vector<std::string> &curr_path_i_A,
@@ -72,6 +76,10 @@ private:
                                std::pair<size_t, size_t> index_of_pred_succ);
 
   std::vector<std::string> ordered_tasks_i_B;
+
+  std::unordered_map<std::string, bool> robot_required_at_task_i_u_j;
+
+  const double LARGE_COST = 1000000000;
 
   ////////////////////////////////////////////////////////////////////////
   /////////  C O M M   A N D   V A R   U P D A T E   P H A S E   /////////

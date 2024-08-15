@@ -13,18 +13,23 @@ bool MrtaDecentralizedHssSolver::solveOneIteration(
 }
 
 void MrtaDecentralizedHssSolver::taskInclusionPhase() {
-  std::vector<std::string> curr_path_i_A = {"START", "Destination_3", "END"};
-  ordered_tasks_i_B = {"Destination_1","Destination_3"};
+  std::vector<std::string> curr_path_i_A = {"START", "END"};
+  ordered_tasks_i_B = {"Destination_1", "Destination_3"};
   for (const std::string &task : relevant_tasks_names) {
     std::pair<size_t, size_t> index_of_pred_succ =
-        getIndexOfPredecessorSuccessorToTask(task, curr_path_i_A, ordered_tasks_i_B);
-    std::cout<<task<<" preced - succs index "<<index_of_pred_succ.first<<" - "<<index_of_pred_succ.second<<std::endl;
-    // size_t task_proposed_index =
-    //     getTaskInsertionIndex(curr_path_i_A, task, index_of_pred_succ);
-    // if (getAfterTaskInsertionCost(curr_path_i_A, task, task_proposed_index) <
-    //     getCost(curr_path_i_A)) {
-    //   curr_path_i_A.insert(curr_path_i_A.begin() + task_proposed_index, task);
-    // }
+        getIndexOfPredecessorSuccessorToTask(task, curr_path_i_A,
+                                             ordered_tasks_i_B);
+    std::cout << task << " preced - succs index " << index_of_pred_succ.first
+              << " - " << index_of_pred_succ.second << std::endl;
+    size_t task_proposed_index_l =
+        getTaskInsertionIndex(curr_path_i_A, task, index_of_pred_succ);
+    std::cout << "Insertion of " << task << " propsed at "
+              << task_proposed_index_l << std::endl;
+    if (getAfterTaskInsertionCost(curr_path_i_A, task, task_proposed_index_l) <
+        getCost(curr_path_i_A)) {
+      curr_path_i_A.insert(curr_path_i_A.begin() + task_proposed_index_l, task);
+      std::cout << "Path updated accordingly" << std::endl;
+    }
   }
 }
 
@@ -32,8 +37,10 @@ std::pair<size_t, size_t>
 MrtaDecentralizedHssSolver::getIndexOfPredecessorSuccessorToTask(
     const std::string &task, const std::vector<std::string> &curr_path_i_A,
     const std::vector<std::string> &ordered_tasks_i_B) {
-  int start_task_index = getIndexOfObjectInVector(MrtaConfig::StdTaskNames::START_TASK, curr_path_i_A);
-  int end_task_index = getIndexOfObjectInVector(MrtaConfig::StdTaskNames::END_TASK, curr_path_i_A);
+  int start_task_index = getIndexOfObjectInVector(
+      MrtaConfig::StdTaskNames::START_TASK, curr_path_i_A);
+  int end_task_index = getIndexOfObjectInVector(
+      MrtaConfig::StdTaskNames::END_TASK, curr_path_i_A);
   std::pair<size_t, size_t> pred_succ_pair(start_task_index, end_task_index);
   std::vector<std::string>::const_iterator task_iter_in_ordered_tasks =
       getIterToObjectInVector(ordered_tasks_i_B, task);
@@ -80,16 +87,83 @@ MrtaDecentralizedHssSolver::getIndexOfPredecessorSuccessorToTask(
 size_t MrtaDecentralizedHssSolver::getTaskInsertionIndex(
     const std::vector<std::string> &curr_path_i_A, const std::string &task,
     std::pair<size_t, size_t> index_of_pred_succ) {
-  return size_t(0);
+  double min_insertion_cost = std::numeric_limits<double>::max();
+  size_t min_insertion_index = -1;
+  for (size_t index_l = index_of_pred_succ.first + 1;
+       index_l <= index_of_pred_succ.second; ++index_l) {
+    double insertion_cost =
+        getAfterTaskInsertionCost(curr_path_i_A, task, index_l);
+    std::cout << "Insertion cost of " << task << " at " << index_l << " - "
+              << insertion_cost << std::endl;
+    if (insertion_cost < min_insertion_cost) {
+      std::cout << "Min insertion updated" << std::endl;
+      min_insertion_index = index_l;
+      min_insertion_cost = insertion_cost;
+    }
+  }
+  return min_insertion_index;
 }
 
 double MrtaDecentralizedHssSolver::getAfterTaskInsertionCost(
     const std::vector<std::string> &curr_path_i_A, const std::string &task,
     size_t index) {
-  return 0.0;
+  std::vector<std::string> curr_path_with_insertion_i_oplus_j_A(curr_path_i_A);
+
+  curr_path_with_insertion_i_oplus_j_A.insert(
+      curr_path_with_insertion_i_oplus_j_A.begin() + index, task);
+
+  return getCost(curr_path_with_insertion_i_oplus_j_A);
 }
 
 double MrtaDecentralizedHssSolver::getCost(
     const std::vector<std::string> &curr_path_i_A) {
-  return 0.0;
+  return getCostOfTravelC1(curr_path_i_A) +
+         getCostOfAttendanceC2(curr_path_i_A);
+}
+
+double MrtaDecentralizedHssSolver::getCostOfTravelC1(
+    const std::vector<std::string> &curr_path_i_A) {
+  std::string last_task = MrtaConfig::StdTaskNames::START_TASK;
+  double robot_arrival_at_last_task = 0.0;
+  double last_task_execution_start = 0.0;
+  double last_task_execution_duration = 0.0;
+
+  for (const std::string &task : curr_path_i_A) {
+    if (task == MrtaConfig::StdTaskNames::START_TASK) {
+      continue;
+    }
+
+    int index_of_last_task = task_name_to_id_map[last_task];
+    int index_of_task = task_name_to_id_map[task];
+    int index_of_robot = robot_name_to_id_map[robot_name];
+
+    double arrival_at_task =
+        last_task_execution_start + last_task_execution_duration +
+        robot_travel_times_vector.at(index_of_robot)(index_of_last_task,
+                                                     index_of_task);
+
+    last_task = task;
+    robot_arrival_at_last_task = arrival_at_task;
+    last_task_execution_start =
+        std::max(task_start_time.at(index_of_task), arrival_at_task);
+
+    if (task != MrtaConfig::StdTaskNames::END_TASK) {
+      last_task_execution_duration =
+          mrta_complete_config->tasks_map.find(last_task)->second.duration;
+    }
+  }
+  return robot_arrival_at_last_task;
+}
+
+double MrtaDecentralizedHssSolver::getCostOfAttendanceC2(
+    const std::vector<std::string> &curr_path_i_A) {
+  double accumulated_cost = 0;
+  for (const std::string &task : curr_path_i_A) {
+    if (robot_required_at_task_i_u_j[task]) {
+      accumulated_cost -= LARGE_COST;
+    } else {
+      accumulated_cost += LARGE_COST;
+    }
+  }
+  return accumulated_cost;
 }

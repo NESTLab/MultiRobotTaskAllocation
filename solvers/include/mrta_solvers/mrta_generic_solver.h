@@ -54,12 +54,24 @@ protected:
       for (auto &robot_task_att : robot_task_id_attendance_sequence) {
         robot_task_att = std::vector<int>(1, START_ID);
       }
+      initializeNameIdMaps();
       initializeTravelTimeTensor();
       task_start_time = std::vector<double>(
           mrta_complete_config->setup.number_of_destinations, 0.0);
       initializeSkillMatrices(mrta_complete_config_in);
     } catch (const std::exception &e) {
       std::cerr << e.what() << '\n';
+    }
+  };
+  
+  void initializeNameIdMaps() {
+    for(int i=0; i<mrta_complete_config->setup.number_of_robots; ++i) {
+      std::string robot_name = mrta_complete_config->setup.all_robot_names.at(i);
+      robot_name_to_id_map[robot_name] = i;
+    }
+    for(int i=0; i<mrta_complete_config->setup.number_of_destinations; ++i) {
+      std::string task_name = mrta_complete_config->setup.all_destination_names.at(i);
+      task_name_to_id_map[task_name] = i;
     }
   };
 
@@ -132,6 +144,8 @@ protected:
   std::vector<double> task_start_time;
   std::map<std::string, std::map<std::string, double>>
       robot_task_attendance_times_map;
+  std::map<std::string, int> robot_name_to_id_map;
+  std::map<std::string, int> task_name_to_id_map;
 
   void initializeTravelTimeTensor();
 
