@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+#include <mrta_solvers/mrta_decentralized_hss_solver.h>
 #include <mrta_solvers/mrta_generic_solver.h>
 #include <mrta_solvers/mrta_heuristic_solver.h>
 #include <mrta_solvers/mrta_milp_solver.h>
@@ -24,7 +25,9 @@ public:
 
   // Some solvers may require something specific which may or may not have been
   // provided by the user. Hence return 'false' if initialization failed.
-  inline bool setMrtaSolverMethod(MrtaConfig::SolverInfo solver_info) {
+  inline bool setMrtaSolverMethod(MrtaConfig::SolverInfo solver_info,
+                                  const std::string &robot_name = "",
+                                  int robot_id = -1) {
     bool solver_set = true;
     switch (solver_info.solver_type) {
     case MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER:
@@ -37,6 +40,11 @@ public:
 
     case MrtaConfig::SOLVER_TYPE::SORTED_SOLVER:
       solver_method = std::make_shared<MrtaSortedSolver>();
+      break;
+
+    case MrtaConfig::SOLVER_TYPE::DECENTRALIZED_HSS_SOLVER:
+      solver_method =
+          std::make_shared<MrtaDecentralizedHssSolver>(robot_name, robot_id);
       break;
 
     default:
@@ -72,10 +80,15 @@ public:
   //    and keeping track of convergence will be up to the user.
   void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
                         MrtaSolution::CompleteSolution &ret_complete_solution) {
-    solver_method->updateMrtaConfig(mrta_complete_config);
+    if (!mrta_config_updated) {
+      mrta_config_updated = true;
+      solver_method->updateMrtaConfig(mrta_complete_config);
+    }
     solver_method->solveMrtaProblem(mrta_complete_config,
                                     ret_complete_solution);
   };
+
+  bool checkConvergence() { return solver_method->checkConvergence(); }
 
   /**
    * @brief Set the Limited Info Mode object
@@ -137,4 +150,6 @@ private:
 
   const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
   const int NUMBER_OF_DASHES_PER_INDENT = 3;
+
+  bool mrta_config_updated = false;
 };

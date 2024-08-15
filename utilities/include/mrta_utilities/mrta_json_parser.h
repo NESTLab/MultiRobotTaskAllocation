@@ -41,6 +41,7 @@ private:
   inline const static std::string json_solver_config = "solver_config";
 
   // Solver config specific texts:
+  inline const static std::string solver_config_type_decentralized_hss = "DECENTRALIZED_HSS";
   inline const static std::string solver_config_type_heuristic = "HEURISTIC";
   inline const static std::string solver_config_type_milp = "MILP";
   inline const static std::string solver_config_type_sorted = "SORTED";
@@ -76,6 +77,7 @@ private:
 
   inline const static std::map<std::string, MrtaConfig::SOLVER_TYPE>
       SOLVER_TYPE_MAP = {
+          {solver_config_type_decentralized_hss, MrtaConfig::SOLVER_TYPE::DECENTRALIZED_HSS_SOLVER},
           {solver_config_type_heuristic, MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER},
           {solver_config_type_milp, MrtaConfig::SOLVER_TYPE::MILP_SOLVER},
           {solver_config_type_sorted, MrtaConfig::SOLVER_TYPE::SORTED_SOLVER}};
