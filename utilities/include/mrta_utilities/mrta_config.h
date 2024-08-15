@@ -10,6 +10,11 @@ namespace StdSkillNames{
   static const std::string BATTERY_SKILL = "BATTERY";
 }
 
+namespace StdTaskNames{
+  static const std::string START_TASK = "START";
+  static const std::string END_TASK = "END";
+}
+
 struct Setup {
   int number_of_robots;
   int number_of_destinations;

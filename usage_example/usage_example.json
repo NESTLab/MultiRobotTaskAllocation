@@ -2,7 +2,7 @@
   "setup": {
       "robots": 3,
       "tasks": 3,
-      "num_skills": 4,
+      "num_skills": 3,
       "mean_percent": 10,
       "epsilon": 0.95,
       "use_robot_ends": false,
@@ -61,7 +61,6 @@
           },
           "velocity": 0.1,
           "skillset": {
-            "BATTERY": 100,
             "DIGGING": 0,
             "HAULING": 1,
             "SCANNING": 1
@@ -78,7 +77,6 @@
           },
           "velocity": 0.1,
           "skillset": {
-            "BATTERY": 100,
             "HAULING": 0,
             "SCANNING": 1,
             "DIGGING": 1
@@ -95,14 +93,12 @@
           },
           "velocity": 0.1,
           "skillset": {
-              "BATTERY": 15,
               "DIGGING": 1,
               "HAULING": 1
           }
       }
   },
   "skill_degradation_rates": {
-    "DIGGING": 0.0,
-    "BATTERY": 0.1
+    "DIGGING": 0.0
   }
 }

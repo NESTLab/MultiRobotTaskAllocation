@@ -19,10 +19,13 @@ private:
 
   bool checkConvergence() { return false; };
 
+  void updateSolution(const std::vector<std::string> &curr_path_i_A,
+                      MrtaSolution::CompleteSolution &ret_complete_solution);
+
   /////////////////////////////////////////////////////////////
   /////////  T A S K   I N C L U S I O N   P H A S E  /////////
   /////////////////////////////////////////////////////////////
-  void taskInclusionPhase();
+  void taskInclusionPhase(std::vector<std::string> &curr_path_i_A);
 
   std::pair<size_t, size_t> getIndexOfPredecessorSuccessorToTask(
       const std::string &task, const std::vector<std::string> &curr_path_i_A,
@@ -63,7 +66,8 @@ private:
 
   double getCost(const std::vector<std::string> &curr_path_i_A);
 
-  double getCostOfTravelC1(const std::vector<std::string> &curr_path_i_A);
+  double getCostOfTravelC1(const std::vector<std::string> &curr_path_i_A,
+                           bool update_solution = false);
 
   double getCostOfAttendanceC2(const std::vector<std::string> &curr_path_i_A);
 

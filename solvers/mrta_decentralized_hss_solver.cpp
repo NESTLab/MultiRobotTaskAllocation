@@ -3,17 +3,41 @@
 bool MrtaDecentralizedHssSolver::solveOneIteration(
     const MrtaConfig::CompleteConfig &mrta_complete_config,
     MrtaSolution::CompleteSolution &ret_complete_solution) {
-  taskInclusionPhase();
+  std::vector<std::string> curr_path_i_A = {"START", "END"};
+  taskInclusionPhase(curr_path_i_A);
   commAndVarUpdatePhase();
   if ((schedule_convergence_timer > MAX_SCHEDULE_CONVERGENCE_TIME) &&
       areAllTasksSatisfied()) {
     converged = true;
   }
-  return false;
+  updateSolution(curr_path_i_A, ret_complete_solution);
+  return converged;
 }
 
-void MrtaDecentralizedHssSolver::taskInclusionPhase() {
-  std::vector<std::string> curr_path_i_A = {"START", "END"};
+void MrtaDecentralizedHssSolver::updateSolution(
+    const std::vector<std::string> &curr_path_i_A,
+    MrtaSolution::CompleteSolution &ret_complete_solution) {
+  double max_robot_schedule = getCostOfTravelC1(curr_path_i_A, true);
+  ret_complete_solution.solution_quality.result_status = 0;
+  ret_complete_solution.solution_quality.result_description = "SUCCESS";
+  ret_complete_solution.solution_quality.maximum_robot_schedule =
+      max_robot_schedule;
+  ret_complete_solution.solution_quality.sum_of_all_robot_schedules = -1.0;
+  ret_complete_solution.solution_quality.solver_runtime = 0.0;
+
+  MrtaSolution::RobotTasksSchedule robot_solution;
+  robot_solution.robot_id = robot_id;
+
+  for (const std::string task : curr_path_i_A) {
+    robot_solution.task_attendance_sequence.push_back(task);
+    robot_solution.task_arrival_time_map[task] =
+        robot_task_attendance_times_map[robot_name][task];
+  }
+
+  ret_complete_solution.robot_task_schedule_map[robot_name] = robot_solution;
+}
+
+void MrtaDecentralizedHssSolver::taskInclusionPhase(std::vector<std::string> &curr_path_i_A) {
   ordered_tasks_i_B = {"Destination_1", "Destination_3"};
   for (const std::string &task : relevant_tasks_names) {
     std::pair<size_t, size_t> index_of_pred_succ =
@@ -122,7 +146,7 @@ double MrtaDecentralizedHssSolver::getCost(
 }
 
 double MrtaDecentralizedHssSolver::getCostOfTravelC1(
-    const std::vector<std::string> &curr_path_i_A) {
+    const std::vector<std::string> &curr_path_i_A, bool update_solution) {
   std::string last_task = MrtaConfig::StdTaskNames::START_TASK;
   double robot_arrival_at_last_task = 0.0;
   double last_task_execution_start = 0.0;
@@ -147,6 +171,12 @@ double MrtaDecentralizedHssSolver::getCostOfTravelC1(
     last_task_execution_start =
         std::max(task_start_time.at(index_of_task), arrival_at_task);
 
+    if (update_solution) {
+      task_start_time.at(index_of_task) = last_task_execution_start;
+      robot_task_attendance_times_map[robot_name][task] =
+          robot_arrival_at_last_task;
+    }
+
     if (task != MrtaConfig::StdTaskNames::END_TASK) {
       last_task_execution_duration =
           mrta_complete_config->tasks_map.find(last_task)->second.duration;
@@ -160,9 +190,9 @@ double MrtaDecentralizedHssSolver::getCostOfAttendanceC2(
   double accumulated_cost = 0;
   for (const std::string &task : curr_path_i_A) {
     if (robot_required_at_task_i_u_j[task]) {
-      accumulated_cost -= LARGE_COST;
-    } else {
       accumulated_cost += LARGE_COST;
+    } else {
+      accumulated_cost -= LARGE_COST;
     }
   }
   return accumulated_cost;

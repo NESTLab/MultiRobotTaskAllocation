@@ -1,5 +1,6 @@
 #include <mrta_interface/mrta_interface.h>
 #include <mrta_solvers/mrta_heuristic_solver.h>
+#include <mrta_solvers/mrta_decentralized_hss_solver.h>
 #include <mrta_solvers/mrta_sorted_solver.h>
 #include <mrta_utilities/mrta_json_parser.h>
 #include <mrta_utilities/mrta_json_writer.h>
@@ -25,7 +26,7 @@ int main(int argc, char const *argv[]) {
   }
 
   // Set which method do you want to use for solving the problem
-  mrta_interface.setMrtaSolverMethod(mrta_config.solver_info);
+  mrta_interface.setMrtaSolverMethod(mrta_config.solver_info, "Robot_3", 2);
 
   // Solve the problem and provide the solution
   MrtaSolution::CompleteSolution solution;
