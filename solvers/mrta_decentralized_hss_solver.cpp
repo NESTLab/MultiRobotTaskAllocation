@@ -44,16 +44,11 @@ void MrtaDecentralizedHssSolver::taskInclusionPhase(
     std::pair<size_t, size_t> index_of_pred_succ =
         getIndexOfPredecessorSuccessorToTask(task, curr_path_i_A,
                                              ordered_tasks_i_B);
-    std::cout << task << " preced - succs index " << index_of_pred_succ.first
-              << " - " << index_of_pred_succ.second << std::endl;
     size_t task_proposed_index_l =
         getTaskInsertionIndex(curr_path_i_A, task, index_of_pred_succ);
-    std::cout << "Insertion of " << task << " propsed at "
-              << task_proposed_index_l << std::endl;
     if (getAfterTaskInsertionCost(curr_path_i_A, task, task_proposed_index_l) <
         getCost(curr_path_i_A)) {
       curr_path_i_A.insert(curr_path_i_A.begin() + task_proposed_index_l, task);
-      std::cout << "Path updated accordingly" << std::endl;
     }
   }
 }
@@ -118,10 +113,7 @@ size_t MrtaDecentralizedHssSolver::getTaskInsertionIndex(
        index_l <= index_of_pred_succ.second; ++index_l) {
     double insertion_cost =
         getAfterTaskInsertionCost(curr_path_i_A, task, index_l);
-    std::cout << "Insertion cost of " << task << " at " << index_l << " - "
-              << insertion_cost << std::endl;
     if (insertion_cost < min_insertion_cost) {
-      std::cout << "Min insertion updated" << std::endl;
       min_insertion_index = index_l;
       min_insertion_cost = insertion_cost;
     }
