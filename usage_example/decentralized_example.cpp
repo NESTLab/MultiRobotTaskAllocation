@@ -85,7 +85,7 @@ int main(int argc, char const *argv[]) {
     once = false;
     for (int i = 0; i < mrta_config.setup.number_of_robots; ++i) {
       robot_solver_vector.at(i).step(collective_solution.at(i));
-      all_converged = all_converged && robot_solver_vector.at(i).hasConverged();
+      all_converged = robot_solver_vector.at(i).hasConverged();
       robot_solver_vector.at(i).debugPrintSolution(collective_solution.at(i));
     }
     for (const auto &robot : robot_solver_vector) {

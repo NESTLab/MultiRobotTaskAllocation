@@ -60,15 +60,13 @@ protected:
   size_t timestep = 0;
   size_t schedule_convergence_timer = 0;
 
-  size_t MAX_SCHEDULE_CONVERGENCE_TIME = 500;
+  const int SCHEDULE_STABLE_FOR_TIMESTEPS_y_T = 50;
+  const int MAXIMUM_NUMBER_OF_ITERATIONS = 250;
 
   bool converged = false;
 
   std::string robot_name;
   int robot_id;
-
-  Eigen::Matrix2d robot_skillset;
-  Eigen::Matrix2d task_skillset;
 
   // std::set<const MrtaSolution::CompleteSolution &> const *others_solutions;
 };

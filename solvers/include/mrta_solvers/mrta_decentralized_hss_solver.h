@@ -1,4 +1,5 @@
 #pragma once
+#include <eigen3/Eigen/Dense>
 #include <mrta_solvers/mrta_decentralized_generic_solver.h>
 #include <queue>
 #include <unordered_map>
@@ -16,9 +17,9 @@ private:
 
   void updateWorldStatus() override{};
 
-  bool areAllTasksSatisfied() { return false; };
+  bool areAllTasksSatisfied() { return true; };
 
-  bool checkConvergence() { return converged; };
+  bool checkConvergence() override { return converged; };
 
   void updateSolution(const std::vector<std::string> &curr_path_i_A,
                       MrtaSolution::CompleteSolution &ret_complete_solution);
@@ -81,6 +82,10 @@ private:
                                std::pair<size_t, size_t> index_of_pred_succ);
 
   std::vector<std::string> ordered_tasks_i_B;
+  std::priority_queue<std::pair<std::string, double>,
+                      std::vector<std::pair<std::string, double>>,
+                      MrtaConfig::CompareSecond>
+      temp_ordered_tasks_set_i_B;
 
   std::unordered_map<std::string, bool> robot_unnecessary_at_task_i_u_j;
 
@@ -90,6 +95,9 @@ private:
   /////////  C O M M   A N D   V A R   U P D A T E   P H A S E   /////////
   ////////////////////////////////////////////////////////////////////////
   void commAndVarUpdatePhase(
+      const MrtaSolution::CompleteSolution &complete_solution);
+
+  void defineUnnecessaryRobots(
       const MrtaSolution::CompleteSolution &complete_solution);
 
   void getRobotsQueueAttendingTask(
@@ -102,9 +110,11 @@ private:
 
   void updateKnowledge(){};
 
-  bool hasEveryoneConverged() { return false; };
+  bool hasOverallScheduleSettled(
+      const MrtaSolution::CompleteSolution &complete_solution);
 
-  void defineTaskSequence(){};
+  void
+  defineTaskSequence(const MrtaSolution::CompleteSolution &complete_solution);
 
   int isMapSubsetOfSet(const std::map<std::string, double> &source_map,
                        const std::set<std::string> &ref_set);
@@ -112,5 +122,13 @@ private:
   void addMapKeysToSet(const std::map<std::string, double> &source_map,
                        std::set<std::string> &ref_set);
 
+  double getScheduleDifferenceInThisTimestep(
+      const MrtaSolution::CompleteSolution &complete_solution);
+
   bool first = false;
+
+  const double ARRIVAL_TIME_CHANGE_THRESHOLD_Y = 0.5;
+
+  Eigen::MatrixXd last_timestep_robot_arrival_times_at_tasks;
+  Eigen::MatrixXd robot_arrival_times_at_tasks;
 };
