@@ -1,5 +1,6 @@
 #pragma once
 #include <mrta_solvers/mrta_decentralized_generic_solver.h>
+#include <queue>
 #include <unordered_map>
 
 class MrtaDecentralizedHssSolver : public MrtaDecentralizedGenericSolver {
@@ -9,7 +10,7 @@ public:
   ~MrtaDecentralizedHssSolver() override{};
 
 private:
-  bool solveOneIteration(
+  void solveOneIteration(
       const MrtaConfig::CompleteConfig &mrta_complete_config,
       MrtaSolution::CompleteSolution &ret_complete_solution) override;
 
@@ -17,7 +18,7 @@ private:
 
   bool areAllTasksSatisfied() { return false; };
 
-  bool checkConvergence() { return false; };
+  bool checkConvergence() { return converged; };
 
   void updateSolution(const std::vector<std::string> &curr_path_i_A,
                       MrtaSolution::CompleteSolution &ret_complete_solution);
@@ -81,20 +82,35 @@ private:
 
   std::vector<std::string> ordered_tasks_i_B;
 
-  std::unordered_map<std::string, bool> robot_required_at_task_i_u_j;
+  std::unordered_map<std::string, bool> robot_unnecessary_at_task_i_u_j;
 
   const double LARGE_COST = 1000000000;
 
   ////////////////////////////////////////////////////////////////////////
   /////////  C O M M   A N D   V A R   U P D A T E   P H A S E   /////////
   ////////////////////////////////////////////////////////////////////////
-  void commAndVarUpdatePhase(){};
+  void commAndVarUpdatePhase(
+      const MrtaSolution::CompleteSolution &complete_solution);
+
+  void getRobotsQueueAttendingTask(
+      std::priority_queue<std::pair<std::string, double>,
+                          std::vector<std::pair<std::string, double>>,
+                          MrtaConfig::CompareSecond>
+          &robot_arrival_time_queue_j_I,
+      const std::string &task,
+      const MrtaSolution::CompleteSolution &complete_solution);
 
   void updateKnowledge(){};
 
   bool hasEveryoneConverged() { return false; };
 
   void defineTaskSequence(){};
+
+  int isMapSubsetOfSet(const std::map<std::string, double> &source_map,
+                       const std::set<std::string> &ref_set);
+
+  void addMapKeysToSet(const std::map<std::string, double> &source_map,
+                       std::set<std::string> &ref_set);
 
   bool first = false;
 };

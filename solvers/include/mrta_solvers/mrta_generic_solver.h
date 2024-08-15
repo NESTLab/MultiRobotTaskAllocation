@@ -19,6 +19,8 @@ protected:
 
   virtual void updateWorldStatus() = 0;
 
+  virtual bool checkConvergence() { return true; };
+
   bool limited_info_mode = false;
 
   /**
@@ -63,14 +65,17 @@ protected:
       std::cerr << e.what() << '\n';
     }
   };
-  
+
   void initializeNameIdMaps() {
-    for(int i=0; i<mrta_complete_config->setup.number_of_robots; ++i) {
-      std::string robot_name = mrta_complete_config->setup.all_robot_names.at(i);
+    for (int i = 0; i < mrta_complete_config->setup.number_of_robots; ++i) {
+      std::string robot_name =
+          mrta_complete_config->setup.all_robot_names.at(i);
       robot_name_to_id_map[robot_name] = i;
     }
-    for(int i=0; i<mrta_complete_config->setup.number_of_destinations; ++i) {
-      std::string task_name = mrta_complete_config->setup.all_destination_names.at(i);
+    for (int i = 0; i < mrta_complete_config->setup.number_of_destinations;
+         ++i) {
+      std::string task_name =
+          mrta_complete_config->setup.all_destination_names.at(i);
       task_name_to_id_map[task_name] = i;
     }
   };

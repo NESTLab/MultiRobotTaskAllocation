@@ -45,7 +45,7 @@ protected:
    * @brief: solveOneIteration()
    *
    */
-  virtual bool
+  virtual void
   solveOneIteration(const MrtaConfig::CompleteConfig &mrta_complete_config,
                     MrtaSolution::CompleteSolution &ret_complete_solution) = 0;
 

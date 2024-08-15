@@ -80,10 +80,15 @@ public:
   //    and keeping track of convergence will be up to the user.
   void solveMrtaProblem(const MrtaConfig::CompleteConfig &mrta_complete_config,
                         MrtaSolution::CompleteSolution &ret_complete_solution) {
-    solver_method->updateMrtaConfig(mrta_complete_config);
+    if (!mrta_config_updated) {
+      mrta_config_updated = true;
+      solver_method->updateMrtaConfig(mrta_complete_config);
+    }
     solver_method->solveMrtaProblem(mrta_complete_config,
                                     ret_complete_solution);
   };
+
+  bool checkConvergence() { return solver_method->checkConvergence(); }
 
   /**
    * @brief Set the Limited Info Mode object
@@ -145,4 +150,6 @@ private:
 
   const int NUMBER_OF_INDENTS_PER_LEVEL = 1;
   const int NUMBER_OF_DASHES_PER_INDENT = 3;
+
+  bool mrta_config_updated = false;
 };

@@ -1,17 +1,18 @@
 #include <mrta_solvers/mrta_decentralized_hss_solver.h>
 
-bool MrtaDecentralizedHssSolver::solveOneIteration(
+void MrtaDecentralizedHssSolver::solveOneIteration(
     const MrtaConfig::CompleteConfig &mrta_complete_config,
     MrtaSolution::CompleteSolution &ret_complete_solution) {
   std::vector<std::string> curr_path_i_A = {"START", "END"};
+  commAndVarUpdatePhase(ret_complete_solution);
   taskInclusionPhase(curr_path_i_A);
-  commAndVarUpdatePhase();
   if ((schedule_convergence_timer > MAX_SCHEDULE_CONVERGENCE_TIME) &&
       areAllTasksSatisfied()) {
     converged = true;
-  }
+  } else
+    converged = false;
+
   updateSolution(curr_path_i_A, ret_complete_solution);
-  return converged;
 }
 
 void MrtaDecentralizedHssSolver::updateSolution(
@@ -37,7 +38,8 @@ void MrtaDecentralizedHssSolver::updateSolution(
   ret_complete_solution.robot_task_schedule_map[robot_name] = robot_solution;
 }
 
-void MrtaDecentralizedHssSolver::taskInclusionPhase(std::vector<std::string> &curr_path_i_A) {
+void MrtaDecentralizedHssSolver::taskInclusionPhase(
+    std::vector<std::string> &curr_path_i_A) {
   ordered_tasks_i_B = {"Destination_1", "Destination_3"};
   for (const std::string &task : relevant_tasks_names) {
     std::pair<size_t, size_t> index_of_pred_succ =
@@ -189,11 +191,118 @@ double MrtaDecentralizedHssSolver::getCostOfAttendanceC2(
     const std::vector<std::string> &curr_path_i_A) {
   double accumulated_cost = 0;
   for (const std::string &task : curr_path_i_A) {
-    if (robot_required_at_task_i_u_j[task]) {
+    if (robot_unnecessary_at_task_i_u_j[task]) {
       accumulated_cost += LARGE_COST;
     } else {
       accumulated_cost -= LARGE_COST;
     }
   }
   return accumulated_cost;
+}
+
+void MrtaDecentralizedHssSolver::commAndVarUpdatePhase(
+    const MrtaSolution::CompleteSolution &complete_solution) {
+  std::map<std::string, std::set<std::string>> tasks_coalition_map_Z;
+  for (const auto &task : relevant_tasks_names) {
+    std::pair<std::string, double> robot_arrival_time_pair;
+    std::priority_queue<std::pair<std::string, double>,
+                        std::vector<std::pair<std::string, double>>,
+                        MrtaConfig::CompareSecond>
+        robot_arrival_time_queue_j_I;
+
+    std::set<std::string> coalition_at_task;
+    std::set<std::string> coalition_skillset;
+
+    getRobotsQueueAttendingTask(robot_arrival_time_queue_j_I, task, complete_solution);
+
+    double latest_arrival_time = 0.0;
+    while (robot_arrival_time_queue_j_I.size() > 0) {
+      std::pair<std::string, double> robot_arrival_time_pair =
+          robot_arrival_time_queue_j_I.top();
+      robot_arrival_time_queue_j_I.pop();
+      std::map<std::string, MrtaConfig::Robot>::const_iterator robot_iter =
+          mrta_complete_config->robots_map.find(robot_arrival_time_pair.first);
+      if (robot_iter == mrta_complete_config->robots_map.end())
+        continue;
+      bool robot_skills_subset_of_coalition =
+          isMapSubsetOfSet(robot_iter->second.skillset, coalition_skillset);
+      if (robot_skills_subset_of_coalition)
+        continue;
+      coalition_at_task.insert(robot_arrival_time_pair.first);
+
+      addMapKeysToSet(robot_iter->second.skillset, coalition_skillset);
+
+      latest_arrival_time =
+          std::max(latest_arrival_time, robot_arrival_time_pair.second);
+
+      std::map<std::string, MrtaConfig::Task>::const_iterator task_iter =
+          mrta_complete_config->tasks_map.find(task);
+      bool task_requirements_subset_of_coalition_skillset =
+          isMapSubsetOfSet(task_iter->second.skillset, coalition_skillset);
+      if (task_requirements_subset_of_coalition_skillset)
+        break;
+    }
+    bool robot_not_in_coalition =
+        (coalition_at_task.find(robot_name) == coalition_at_task.end());
+    if (coalition_at_task.size() > 0 && robot_not_in_coalition) {
+      robot_unnecessary_at_task_i_u_j[task] = true;
+    } else {
+      robot_unnecessary_at_task_i_u_j[task] = false;
+    }
+    int task_id = task_name_to_id_map[task];
+    task_start_time.at(task_id) = latest_arrival_time;
+  }
+}
+
+void MrtaDecentralizedHssSolver::getRobotsQueueAttendingTask(
+    std::priority_queue<std::pair<std::string, double>,
+                        std::vector<std::pair<std::string, double>>,
+                        MrtaConfig::CompareSecond>
+        &robot_arrival_time_queue_j_I,
+    const std::string &task,
+    const MrtaSolution::CompleteSolution &complete_solution) {
+
+  for (const auto &robot : mrta_complete_config->setup.all_robot_names) {
+    std::map<std::string, MrtaSolution::RobotTasksSchedule>::const_iterator
+        robot_schedule_iter =
+            complete_solution.robot_task_schedule_map.find(robot);
+    if (robot_schedule_iter !=
+        complete_solution.robot_task_schedule_map.end()) {
+      std::map<std::string, double>::const_iterator arrival_time_iter =
+          robot_schedule_iter->second.task_arrival_time_map.find(task);
+      if (arrival_time_iter !=
+          robot_schedule_iter->second.task_arrival_time_map.end()) {
+        if (arrival_time_iter->second > 0.0) {
+          robot_arrival_time_queue_j_I.emplace(
+              std::make_pair(robot, arrival_time_iter->second));
+        }
+      }
+    }
+  }
+}
+
+int MrtaDecentralizedHssSolver::isMapSubsetOfSet(
+    const std::map<std::string, double> &source_map,
+    const std::set<std::string> &ref_set) {
+  int common_elements = 0;
+  int non_zero_elements = 0;
+  for (const auto pair : source_map) {
+    if (pair.second > 0.0) {
+      ++non_zero_elements;
+      if (ref_set.find(pair.first) != ref_set.end()) {
+        ++common_elements;
+      }
+    }
+  }
+  return common_elements == non_zero_elements;
+}
+
+void MrtaDecentralizedHssSolver::addMapKeysToSet(
+    const std::map<std::string, double> &source_map,
+    std::set<std::string> &ref_set) {
+  for (const auto &key_value_pair : source_map) {
+    if (key_value_pair.second > 0.0) {
+      ref_set.insert(key_value_pair.first);
+    }
+  }
 }
