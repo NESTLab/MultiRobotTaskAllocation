@@ -3,42 +3,50 @@
         "Robot_1": {
             "robot_id": "Robot_1",
             "task_arrival_time_map": {
-                "END": 0.0
+                "END": 0.0,
+                "START": 0.0
             },
             "task_sequence_map": {
-                "0": "END"
+                "0": "START",
+                "1": "END"
             }
         },
         "Robot_2": {
             "robot_id": "Robot_2",
             "task_arrival_time_map": {
-                "END": 0.0
+                "Destination_2": 241.6213562373095,
+                "Destination_3": 100.0,
+                "END": 647.6135954999579,
+                "START": 0.0
             },
             "task_sequence_map": {
-                "0": "END"
+                "0": "START",
+                "1": "Destination_3",
+                "2": "Destination_2",
+                "3": "END"
             }
         },
         "Robot_3": {
             "robot_id": "Robot_3",
             "task_arrival_time_map": {
-                "Destination_1": 4.42842712474619,
-                "Destination_2": 1.2,
-                "Destination_3": 2.8142135623730953,
-                "END": 0.0
+                "Destination_1": 223.60679774997897,
+                "Destination_2": 423.80679774997895,
+                "END": 524.0067977499789,
+                "START": 0.0
             },
             "task_sequence_map": {
-                "0": "Destination_2",
-                "1": "Destination_3",
-                "2": "Destination_1",
+                "0": "START",
+                "1": "Destination_1",
+                "2": "Destination_2",
                 "3": "END"
             }
         }
     },
     "solution_quality": {
-        "maximum_robot_schedule": -4.32852298792932e+99,
-        "result_description": "",
-        "result_status": 247772992,
-        "solver_runtime": "",
-        "sum_of_all_robot_schedules": 8.6911795628713e-311
+        "maximum_robot_schedule": 0.0,
+        "result_description": "SUCCESS",
+        "result_status": 0,
+        "solver_runtime": "\u0000",
+        "sum_of_all_robot_schedules": -1.0
     }
 }
