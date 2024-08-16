@@ -89,7 +89,7 @@ private:
 
   std::unordered_map<std::string, bool> robot_unnecessary_at_task_i_u_j;
 
-  const double LARGE_COST = 1000000000;
+  const double LARGE_COST = 100000;
 
   ////////////////////////////////////////////////////////////////////////
   /////////  C O M M   A N D   V A R   U P D A T E   P H A S E   /////////

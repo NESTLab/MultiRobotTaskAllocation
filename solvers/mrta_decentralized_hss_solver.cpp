@@ -182,6 +182,10 @@ double MrtaDecentralizedHssSolver::getCostOfAttendanceC2(
     const std::vector<std::string> &curr_path_i_A) {
   double accumulated_cost = 0;
   for (const std::string &task : curr_path_i_A) {
+    if (task == MrtaConfig::StdTaskNames::START_TASK ||
+        task == MrtaConfig::StdTaskNames::END_TASK)
+      continue;
+
     if (robot_unnecessary_at_task_i_u_j[task]) {
       accumulated_cost += LARGE_COST;
     } else {
@@ -257,8 +261,10 @@ void MrtaDecentralizedHssSolver::defineUnnecessaryRobots(
       addMapKeysToSet(robot_iter->second.skillset, coalition_skillset);
 
       sum_of_arrival_times += robot_arrival_time_pair.second;
-      latest_arrival_time =
-          std::max(latest_arrival_time, robot_arrival_time_pair.second);
+      if (robot_arrival_time_pair.second > latest_arrival_time &&
+          robot_arrival_time_pair.first != robot_name) {
+        latest_arrival_time = robot_arrival_time_pair.second;
+      }
 
       std::map<std::string, MrtaConfig::Task>::const_iterator task_iter =
           mrta_complete_config->tasks_map.find(task);
