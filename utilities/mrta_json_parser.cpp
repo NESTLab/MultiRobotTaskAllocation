@@ -326,10 +326,18 @@ void MrtaJsonParser::loadRobotsFromJson(
           double(current_robot_data.value()[json_pos]["y"]);
 
       // Retrieve and set the robot's end location
-      mrta_config_robot_current.desired_end_position.pos_x =
-          double(current_robot_data.value()[json_desired_end_position]["x"]);
-      mrta_config_robot_current.desired_end_position.pos_y =
-          double(current_robot_data.value()[json_desired_end_position]["y"]);
+      if (current_robot_data.value().contains(json_desired_end_position)) {
+        mrta_config_robot_current.desired_end_position.pos_x =
+            current_robot_data.value()[json_desired_end_position].contains("x")
+                ? double(current_robot_data
+                             .value()[json_desired_end_position]["x"])
+                : 0.0;
+        mrta_config_robot_current.desired_end_position.pos_y =
+            current_robot_data.value()[json_desired_end_position].contains("y")
+                ? double(current_robot_data
+                             .value()[json_desired_end_position]["y"])
+                : 0.0;
+      }
 
       mrta_config_robot_current.velocity =
           current_robot_data.value().contains(json_velocity)
@@ -374,8 +382,8 @@ void MrtaJsonParser::loadRobotsFromJson(
 //  *
 //  * This function parses the provided JSON data and populates the
 //  sigma_percent matrix
-//  * based on the information in the JSON. It expects the JSON data to have the
-//  following structure:
+//  * based on the information in the JSON. It expects the JSON data to have
+//  the following structure:
 //  *
 //  * {
 //  *    "sigma_percent": {
@@ -390,7 +398,8 @@ void MrtaJsonParser::loadRobotsFromJson(
 //  *
 //  * @param json_data The JSON data containing path sigma information.
 //  *
-//  * @throw std::runtime_error If a required field is missing in the JSON data.
+//  * @throw std::runtime_error If a required field is missing in the JSON
+//  data.
 //  */
 // void Config::loadPathSigmas(const json& json_data) {
 //     try {
@@ -408,9 +417,9 @@ void MrtaJsonParser::loadRobotsFromJson(
 //             sigma_percent(row, col) = value;
 //         }
 //     } catch (const std::exception& e) {
-//         // Handle exception when a required field is missing in the JSON data
-//         throw std::runtime_error("Missing Field " + std::string(e.what()) + "
-//         in json file");
+//         // Handle exception when a required field is missing in the JSON
+//         data throw std::runtime_error("Missing Field " +
+//         std::string(e.what()) + " in json file");
 //     }
 // }
 
@@ -420,8 +429,8 @@ skill_degradation_rates map.
 //  *
 //  * This function parses the provided JSON data and populates the
 sigma_percent matrix
-//  * based on the information in the JSON. It expects the JSON data to have the
-following structure:
+//  * based on the information in the JSON. It expects the JSON data to have
+the following structure:
 //  *
 //  * {
 //  *    "skill_degradation_rates": {
@@ -431,12 +440,13 @@ following structure:
 //  *    }
 //  * }
 //  *
-//  * The skill_degradation_rates map represents the degradation values for each
-of the skills.
+//  * The skill_degradation_rates map represents the degradation values for
+each of the skills.
 //  *
 //  * @param json_data The JSON data containing path sigma information.
 //  *
-//  * @throw std::runtime_error If a required field is missing in the JSON data.
+//  * @throw std::runtime_error If a required field is missing in the JSON
+data.
  *
  * @param json_data
  */
@@ -446,7 +456,8 @@ void MrtaJsonParser::loadSkillDegradationFromJson(
   double default_value = 0.0;
   for (const std::string &skill : mrta_config_setup.all_skill_names) {
 
-    if (json_data[json_skill_degradation_rates].contains(skill)) {
+    if (json_data.contains(json_skill_degradation_rates) &&
+        json_data[json_skill_degradation_rates].contains(skill)) {
       try {
         mrta_config_environment.skill_degradation_rate_map[skill] =
             json_data[json_skill_degradation_rates][skill];
