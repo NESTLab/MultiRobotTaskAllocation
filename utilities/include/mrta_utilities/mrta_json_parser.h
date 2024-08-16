@@ -13,6 +13,7 @@ public:
                             MrtaConfig::CompleteConfig &ret_complete_config);
 
 private:
+  inline const static bool LEGACY_MODE = false;
   // JSON field names
   inline const static std::string json_setup = "setup";
   inline const static std::string json_robots = "robots";

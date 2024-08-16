@@ -52,9 +52,10 @@ void MrtaJsonParser::checkMandatoryFieldsInJson(const json &json_data) {
   }
 
   for (const auto &current_robot_json_data : json_data[json_robots]) {
+    std::string legacy_pos_name = LEGACY_MODE ? json_pose : json_pos;
     throwErrorIfKeyMissing(current_robot_json_data, 
-                           {json_pos, json_skillset});
-    throwErrorIfKeyMissing(current_robot_json_data[json_pos],
+                           {legacy_pos_name, json_skillset});
+    throwErrorIfKeyMissing(current_robot_json_data[legacy_pos_name],
                            std::vector<std::string>({"x", "y"}));
   }
 }
@@ -319,11 +320,12 @@ void MrtaJsonParser::loadRobotsFromJson(
       mrta_config_robot_current.robot_name = robot_name;
       mrta_config_setup.all_robot_names.push_back(robot_name);
 
+      std::string legacy_pos_name = LEGACY_MODE ? json_pose : json_pos;
       // Retrieve and set the robot's location
       mrta_config_robot_current.position.pos_x =
-          double(current_robot_data.value()[json_pos]["x"]);
+          double(current_robot_data.value()[legacy_pos_name]["x"]);
       mrta_config_robot_current.position.pos_y =
-          double(current_robot_data.value()[json_pos]["y"]);
+          double(current_robot_data.value()[legacy_pos_name]["y"]);
 
       // Retrieve and set the robot's end location
       if (current_robot_data.value().contains(json_desired_end_position)) {
