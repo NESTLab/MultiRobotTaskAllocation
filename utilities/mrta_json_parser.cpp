@@ -45,7 +45,7 @@ void MrtaJsonParser::checkMandatoryFieldsInJson(const json &json_data) {
                          {json_robots, json_tasks, json_num_skills});
 
   for (const auto &current_task_json_data : json_data[json_tasks]) {
-    throwErrorIfKeyMissing(current_task_json_data, 
+    throwErrorIfKeyMissing(current_task_json_data,
                            {json_pos, json_duration, json_skillset});
     throwErrorIfKeyMissing(current_task_json_data[json_pos],
                            std::vector<std::string>({"x", "y"}));
@@ -53,7 +53,7 @@ void MrtaJsonParser::checkMandatoryFieldsInJson(const json &json_data) {
 
   for (const auto &current_robot_json_data : json_data[json_robots]) {
     std::string legacy_pos_name = LEGACY_MODE ? json_pose : json_pos;
-    throwErrorIfKeyMissing(current_robot_json_data, 
+    throwErrorIfKeyMissing(current_robot_json_data,
                            {legacy_pos_name, json_skillset});
     throwErrorIfKeyMissing(current_robot_json_data[legacy_pos_name],
                            std::vector<std::string>({"x", "y"}));
@@ -221,15 +221,21 @@ void MrtaJsonParser::loadTasksFromJson(
           mrta_config_setup.all_destination_names.begin() + current_task_index,
           task_name);
 
+      double legacy_scaling_factor_if_present =
+          getLegacyScalingFactorIfExists(json_data);
+
       // Retrieve and set the task's location
       mrta_config_task_current.position.pos_x =
-          double(current_task_json_data.value()[json_pos]["x"]);
+          double(current_task_json_data.value()[json_pos]["x"]) *
+          legacy_scaling_factor_if_present;
       mrta_config_task_current.position.pos_y =
-          double(current_task_json_data.value()[json_pos]["y"]);
+          double(current_task_json_data.value()[json_pos]["y"]) *
+          legacy_scaling_factor_if_present;
 
       // Set the maximum completion time for the task
       mrta_config_task_current.duration =
-          current_task_json_data.value()[json_duration];
+          double(current_task_json_data.value()[json_duration]) *
+          legacy_scaling_factor_if_present;
 
       // Iterate over the skills required for the task
       for (const auto &c :
@@ -321,11 +327,16 @@ void MrtaJsonParser::loadRobotsFromJson(
       mrta_config_setup.all_robot_names.push_back(robot_name);
 
       std::string legacy_pos_name = LEGACY_MODE ? json_pose : json_pos;
+      double legacy_scaling_factor_if_present =
+          getLegacyScalingFactorIfExists(json_data);
+
       // Retrieve and set the robot's location
       mrta_config_robot_current.position.pos_x =
-          double(current_robot_data.value()[legacy_pos_name]["x"]);
+          double(current_robot_data.value()[legacy_pos_name]["x"]) *
+          legacy_scaling_factor_if_present;
       mrta_config_robot_current.position.pos_y =
-          double(current_robot_data.value()[legacy_pos_name]["y"]);
+          double(current_robot_data.value()[legacy_pos_name]["y"]) *
+          legacy_scaling_factor_if_present;
 
       // Retrieve and set the robot's end location
       if (current_robot_data.value().contains(json_desired_end_position)) {

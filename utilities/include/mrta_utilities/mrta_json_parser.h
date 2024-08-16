@@ -13,7 +13,6 @@ public:
                             MrtaConfig::CompleteConfig &ret_complete_config);
 
 private:
-  inline const static bool LEGACY_MODE = false;
   // JSON field names
   inline const static std::string json_setup = "setup";
   inline const static std::string json_robots = "robots";
@@ -54,6 +53,23 @@ private:
   inline const static double default_epsilon = 0.95;
   inline const static double default_mean_percent = 10;
   inline const static double default_velocity = 1;
+
+  // Legacy json compatibility parameters
+  inline const static bool LEGACY_MODE = false;
+  inline const static std::string legacy_json_task_arena_size =
+      "task_arena_size";
+
+  inline const static double default_legacy_json_task_arena_size = 100.0;
+
+  inline static double getLegacyScalingFactorIfExists(const json &json_data) {
+    if (!LEGACY_MODE)
+      return 1.0;
+    if (json_data[json_setup].contains(legacy_json_task_arena_size))
+      return double(json_data[json_setup][legacy_json_task_arena_size]);
+    else
+      return default_legacy_json_task_arena_size;
+  }
+
 
   template <typename T>
   static T getSetupValueFromJson(const json &json_data,
