@@ -41,7 +41,8 @@ private:
   inline const static std::string json_solver_config = "solver_config";
 
   // Solver config specific texts:
-  inline const static std::string solver_config_type_decentralized_hss = "DECENTRALIZED_HSS";
+  inline const static std::string solver_config_type_decentralized_hss =
+      "DECENTRALIZED_HSS";
   inline const static std::string solver_config_type_heuristic = "HEURISTIC";
   inline const static std::string solver_config_type_milp = "MILP";
   inline const static std::string solver_config_type_sorted = "SORTED";
@@ -53,6 +54,37 @@ private:
   inline const static double default_mean_percent = 10;
   inline const static double default_velocity = 1;
 
+  //////////////////////////////////////////////////
+  ////// Legacy json compatibility parameters //////
+  //////////////////////////////////////////////////
+  inline const static bool LEGACY_MODE = false;
+  inline const static std::string legacy_json_task_arena_size =
+      "task_arena_size";
+  inline const static std::string legacy_battery_task_id = "0";
+
+  inline const static double default_legacy_json_task_arena_size = 100.0;
+  inline const static double default_legacy_battery_threshold = 50;
+
+  inline static double getLegacyScalingFactorIfExists(const json &json_data) {
+    if (!LEGACY_MODE)
+      return 1.0;
+    if (json_data[json_setup].contains(legacy_json_task_arena_size))
+      return double(json_data[json_setup][legacy_json_task_arena_size]);
+    else
+      return default_legacy_json_task_arena_size;
+  }
+
+  inline static double
+  getLegacyAdjustedSkillValueIfNeeded(const std::string &key, double value) {
+    if (!LEGACY_MODE)
+      return value;
+    if (key != legacy_battery_task_id)
+      return value;
+    else
+      return value >= default_legacy_battery_threshold;
+  }
+  //////////////////////////////////////////////////
+
   template <typename T>
   static T getSetupValueFromJson(const json &json_data,
                                  const std::string &field_name,
@@ -60,8 +92,9 @@ private:
   static void loadSetupFromJson(const json &json_data,
                                 MrtaConfig::Setup &mrta_config_setup);
 
-  static void loadSolverInfoFromJson(const json &json_data,
-                                MrtaConfig::SolverInfo &mrta_config_solver_info);
+  static void
+  loadSolverInfoFromJson(const json &json_data,
+                         MrtaConfig::SolverInfo &mrta_config_solver_info);
 
   static void
   loadTasksFromJson(const json &json_data, MrtaConfig::Setup &mrta_config_setup,
@@ -75,10 +108,31 @@ private:
       const json &json_data, const MrtaConfig::Setup &mrta_config_setup,
       MrtaConfig::Environment &mrta_config_environment);
 
+  inline static void throwErrorIfKeyMissing(const json &json_data,
+                                            const std::string &key) {
+    if (!json_data.contains(key))
+      throw std::invalid_argument(
+          "The mandatory key \"" + key +
+          "\" does not exist in the json structure. Please provide the key at "
+          "its necessary place");
+  };
+
+  inline static void
+  throwErrorIfKeyMissing(const json &json_data,
+                         const std::vector<std::string> &keys) {
+    for (const auto &key : keys) {
+      throwErrorIfKeyMissing(json_data, key);
+    }
+  }
+
+  static void checkMandatoryFieldsInJson(const json &json_data);
+
   inline const static std::map<std::string, MrtaConfig::SOLVER_TYPE>
       SOLVER_TYPE_MAP = {
-          {solver_config_type_decentralized_hss, MrtaConfig::SOLVER_TYPE::DECENTRALIZED_HSS_SOLVER},
-          {solver_config_type_heuristic, MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER},
+          {solver_config_type_decentralized_hss,
+           MrtaConfig::SOLVER_TYPE::DECENTRALIZED_HSS_SOLVER},
+          {solver_config_type_heuristic,
+           MrtaConfig::SOLVER_TYPE::HEURISTIC_SOLVER},
           {solver_config_type_milp, MrtaConfig::SOLVER_TYPE::MILP_SOLVER},
           {solver_config_type_sorted, MrtaConfig::SOLVER_TYPE::SORTED_SOLVER}};
 };

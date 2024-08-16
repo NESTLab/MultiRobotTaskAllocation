@@ -16,6 +16,7 @@ void MrtaJsonParser::parseJsonFile(
     json json_data;
     file >> json_data;
     file.close();
+    checkMandatoryFieldsInJson(json_data);
 
     loadSetupFromJson(json_data, ret_complete_config.setup);
     std::cout << "[INFO] All setup loaded!" << std::endl;
@@ -35,6 +36,27 @@ void MrtaJsonParser::parseJsonFile(
   } catch (const std::exception &e) {
     throw std::runtime_error("Error while loading data from json file. " +
                              std::string(e.what()));
+  }
+}
+
+void MrtaJsonParser::checkMandatoryFieldsInJson(const json &json_data) {
+  throwErrorIfKeyMissing(json_data, {json_setup, json_tasks, json_robots});
+  throwErrorIfKeyMissing(json_data[json_setup],
+                         {json_robots, json_tasks, json_num_skills});
+
+  for (const auto &current_task_json_data : json_data[json_tasks]) {
+    throwErrorIfKeyMissing(current_task_json_data,
+                           {json_pos, json_duration, json_skillset});
+    throwErrorIfKeyMissing(current_task_json_data[json_pos],
+                           std::vector<std::string>({"x", "y"}));
+  }
+
+  for (const auto &current_robot_json_data : json_data[json_robots]) {
+    std::string legacy_pos_name = LEGACY_MODE ? json_pose : json_pos;
+    throwErrorIfKeyMissing(current_robot_json_data,
+                           {legacy_pos_name, json_skillset});
+    throwErrorIfKeyMissing(current_robot_json_data[legacy_pos_name],
+                           std::vector<std::string>({"x", "y"}));
   }
 }
 
@@ -199,15 +221,21 @@ void MrtaJsonParser::loadTasksFromJson(
           mrta_config_setup.all_destination_names.begin() + current_task_index,
           task_name);
 
+      double legacy_scaling_factor_if_present =
+          getLegacyScalingFactorIfExists(json_data);
+
       // Retrieve and set the task's location
       mrta_config_task_current.position.pos_x =
-          double(current_task_json_data.value()[json_pos]["x"]);
+          double(current_task_json_data.value()[json_pos]["x"]) *
+          legacy_scaling_factor_if_present;
       mrta_config_task_current.position.pos_y =
-          double(current_task_json_data.value()[json_pos]["y"]);
+          double(current_task_json_data.value()[json_pos]["y"]) *
+          legacy_scaling_factor_if_present;
 
       // Set the maximum completion time for the task
       mrta_config_task_current.duration =
-          current_task_json_data.value()[json_duration];
+          double(current_task_json_data.value()[json_duration]) *
+          legacy_scaling_factor_if_present;
 
       // Iterate over the skills required for the task
       for (const auto &c :
@@ -224,7 +252,10 @@ void MrtaJsonParser::loadTasksFromJson(
             // If not, add it
             mrta_config_setup.all_skill_names.push_back(skill_name);
 
-          mrta_config_task_current.skillset[c.key()] = c.value();
+          double legacy_adjusted_skill_value =
+              getLegacyAdjustedSkillValueIfNeeded(c.key(), double(c.value()));
+
+          mrta_config_task_current.skillset[c.key()] = legacy_adjusted_skill_value;
         } catch (const std::exception &e) {
           throw std::runtime_error(
               "skill id " + c.key() +
@@ -298,17 +329,34 @@ void MrtaJsonParser::loadRobotsFromJson(
       mrta_config_robot_current.robot_name = robot_name;
       mrta_config_setup.all_robot_names.push_back(robot_name);
 
+      std::string legacy_pos_name = LEGACY_MODE ? json_pose : json_pos;
+      double legacy_scaling_factor_if_present =
+          getLegacyScalingFactorIfExists(json_data);
+
       // Retrieve and set the robot's location
       mrta_config_robot_current.position.pos_x =
-          double(current_robot_data.value()[json_pos]["x"]);
+          double(current_robot_data.value()[legacy_pos_name]["x"]) *
+          legacy_scaling_factor_if_present;
       mrta_config_robot_current.position.pos_y =
-          double(current_robot_data.value()[json_pos]["y"]);
+          double(current_robot_data.value()[legacy_pos_name]["y"]) *
+          legacy_scaling_factor_if_present;
 
       // Retrieve and set the robot's end location
-      mrta_config_robot_current.desired_end_position.pos_x =
-          double(current_robot_data.value()[json_desired_end_position]["x"]);
-      mrta_config_robot_current.desired_end_position.pos_y =
-          double(current_robot_data.value()[json_desired_end_position]["y"]);
+      if (current_robot_data.value().contains(json_desired_end_position)) {
+        mrta_config_robot_current.desired_end_position.pos_x =
+            current_robot_data.value()[json_desired_end_position].contains("x")
+                ? double(current_robot_data
+                             .value()[json_desired_end_position]["x"])
+                : 0.0;
+        mrta_config_robot_current.desired_end_position.pos_y =
+            current_robot_data.value()[json_desired_end_position].contains("y")
+                ? double(current_robot_data
+                             .value()[json_desired_end_position]["y"])
+                : 0.0;
+      } else {
+        mrta_config_robot_current.desired_end_position.pos_x = 0.0;
+        mrta_config_robot_current.desired_end_position.pos_y = 0.0;
+      }
 
       mrta_config_robot_current.velocity =
           current_robot_data.value().contains(json_velocity)
@@ -320,7 +368,10 @@ void MrtaJsonParser::loadRobotsFromJson(
         try {
           std::string skill_name = c.key();
 
-          mrta_config_robot_current.skillset[c.key()] = c.value();
+          double legacy_adjusted_skill_value =
+              getLegacyAdjustedSkillValueIfNeeded(c.key(), double(c.value()));
+
+          mrta_config_robot_current.skillset[c.key()] = legacy_adjusted_skill_value;
 
           // Check if the current skill already exists in the all skills name
           // list.
@@ -353,8 +404,8 @@ void MrtaJsonParser::loadRobotsFromJson(
 //  *
 //  * This function parses the provided JSON data and populates the
 //  sigma_percent matrix
-//  * based on the information in the JSON. It expects the JSON data to have the
-//  following structure:
+//  * based on the information in the JSON. It expects the JSON data to have
+//  the following structure:
 //  *
 //  * {
 //  *    "sigma_percent": {
@@ -369,7 +420,8 @@ void MrtaJsonParser::loadRobotsFromJson(
 //  *
 //  * @param json_data The JSON data containing path sigma information.
 //  *
-//  * @throw std::runtime_error If a required field is missing in the JSON data.
+//  * @throw std::runtime_error If a required field is missing in the JSON
+//  data.
 //  */
 // void Config::loadPathSigmas(const json& json_data) {
 //     try {
@@ -387,9 +439,9 @@ void MrtaJsonParser::loadRobotsFromJson(
 //             sigma_percent(row, col) = value;
 //         }
 //     } catch (const std::exception& e) {
-//         // Handle exception when a required field is missing in the JSON data
-//         throw std::runtime_error("Missing Field " + std::string(e.what()) + "
-//         in json file");
+//         // Handle exception when a required field is missing in the JSON
+//         data throw std::runtime_error("Missing Field " +
+//         std::string(e.what()) + " in json file");
 //     }
 // }
 
@@ -399,8 +451,8 @@ skill_degradation_rates map.
 //  *
 //  * This function parses the provided JSON data and populates the
 sigma_percent matrix
-//  * based on the information in the JSON. It expects the JSON data to have the
-following structure:
+//  * based on the information in the JSON. It expects the JSON data to have
+the following structure:
 //  *
 //  * {
 //  *    "skill_degradation_rates": {
@@ -410,12 +462,13 @@ following structure:
 //  *    }
 //  * }
 //  *
-//  * The skill_degradation_rates map represents the degradation values for each
-of the skills.
+//  * The skill_degradation_rates map represents the degradation values for
+each of the skills.
 //  *
 //  * @param json_data The JSON data containing path sigma information.
 //  *
-//  * @throw std::runtime_error If a required field is missing in the JSON data.
+//  * @throw std::runtime_error If a required field is missing in the JSON
+data.
  *
  * @param json_data
  */
@@ -425,7 +478,8 @@ void MrtaJsonParser::loadSkillDegradationFromJson(
   double default_value = 0.0;
   for (const std::string &skill : mrta_config_setup.all_skill_names) {
 
-    if (json_data[json_skill_degradation_rates].contains(skill)) {
+    if (json_data.contains(json_skill_degradation_rates) &&
+        json_data[json_skill_degradation_rates].contains(skill)) {
       try {
         mrta_config_environment.skill_degradation_rate_map[skill] =
             json_data[json_skill_degradation_rates][skill];
