@@ -16,6 +16,7 @@ void MrtaJsonParser::parseJsonFile(
     json json_data;
     file >> json_data;
     file.close();
+    checkMandatoryFieldsInJson(json_data);
 
     loadSetupFromJson(json_data, ret_complete_config.setup);
     std::cout << "[INFO] All setup loaded!" << std::endl;
@@ -35,6 +36,26 @@ void MrtaJsonParser::parseJsonFile(
   } catch (const std::exception &e) {
     throw std::runtime_error("Error while loading data from json file. " +
                              std::string(e.what()));
+  }
+}
+
+void MrtaJsonParser::checkMandatoryFieldsInJson(const json &json_data) {
+  throwErrorIfKeyMissing(json_data, {json_setup, json_tasks, json_robots});
+  throwErrorIfKeyMissing(json_data[json_setup],
+                         {json_robots, json_tasks, json_num_skills});
+
+  for (const auto &current_task_json_data : json_data[json_tasks]) {
+    throwErrorIfKeyMissing(current_task_json_data, 
+                           {json_pos, json_duration, json_skillset});
+    throwErrorIfKeyMissing(current_task_json_data[json_pos],
+                           std::vector<std::string>({"x", "y"}));
+  }
+
+  for (const auto &current_robot_json_data : json_data[json_robots]) {
+    throwErrorIfKeyMissing(current_robot_json_data, 
+                           {json_pos, json_skillset});
+    throwErrorIfKeyMissing(current_robot_json_data[json_pos],
+                           std::vector<std::string>({"x", "y"}));
   }
 }
 
