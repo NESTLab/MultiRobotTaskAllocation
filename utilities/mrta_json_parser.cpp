@@ -351,6 +351,10 @@ void MrtaJsonParser::loadRobotsFromJson(
                              .value()[json_desired_end_position]["y"])
                 : 0.0;
       }
+      else {
+        mrta_config_robot_current.desired_end_position.pos_x = 0.0;
+        mrta_config_robot_current.desired_end_position.pos_y = 0.0;
+      }
 
       mrta_config_robot_current.velocity =
           current_robot_data.value().contains(json_velocity)
