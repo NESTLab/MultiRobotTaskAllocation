@@ -54,12 +54,16 @@ private:
   inline const static double default_mean_percent = 10;
   inline const static double default_velocity = 1;
 
-  // Legacy json compatibility parameters
+  //////////////////////////////////////////////////
+  ////// Legacy json compatibility parameters //////
+  //////////////////////////////////////////////////
   inline const static bool LEGACY_MODE = false;
   inline const static std::string legacy_json_task_arena_size =
       "task_arena_size";
+  inline const static std::string legacy_battery_task_id = "0";
 
   inline const static double default_legacy_json_task_arena_size = 100.0;
+  inline const static double default_legacy_battery_threshold = 50;
 
   inline static double getLegacyScalingFactorIfExists(const json &json_data) {
     if (!LEGACY_MODE)
@@ -70,6 +74,16 @@ private:
       return default_legacy_json_task_arena_size;
   }
 
+  inline static double
+  getLegacyAdjustedSkillValueIfNeeded(const std::string &key, double value) {
+    if (!LEGACY_MODE)
+      return value;
+    if (key != legacy_battery_task_id)
+      return value;
+    else
+      return value >= default_legacy_battery_threshold;
+  }
+  //////////////////////////////////////////////////
 
   template <typename T>
   static T getSetupValueFromJson(const json &json_data,

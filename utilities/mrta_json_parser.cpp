@@ -252,7 +252,10 @@ void MrtaJsonParser::loadTasksFromJson(
             // If not, add it
             mrta_config_setup.all_skill_names.push_back(skill_name);
 
-          mrta_config_task_current.skillset[c.key()] = c.value();
+          double legacy_adjusted_skill_value =
+              getLegacyAdjustedSkillValueIfNeeded(c.key(), double(c.value()));
+
+          mrta_config_task_current.skillset[c.key()] = legacy_adjusted_skill_value;
         } catch (const std::exception &e) {
           throw std::runtime_error(
               "skill id " + c.key() +
@@ -350,8 +353,7 @@ void MrtaJsonParser::loadRobotsFromJson(
                 ? double(current_robot_data
                              .value()[json_desired_end_position]["y"])
                 : 0.0;
-      }
-      else {
+      } else {
         mrta_config_robot_current.desired_end_position.pos_x = 0.0;
         mrta_config_robot_current.desired_end_position.pos_y = 0.0;
       }
@@ -366,7 +368,10 @@ void MrtaJsonParser::loadRobotsFromJson(
         try {
           std::string skill_name = c.key();
 
-          mrta_config_robot_current.skillset[c.key()] = c.value();
+          double legacy_adjusted_skill_value =
+              getLegacyAdjustedSkillValueIfNeeded(c.key(), double(c.value()));
+
+          mrta_config_robot_current.skillset[c.key()] = legacy_adjusted_skill_value;
 
           // Check if the current skill already exists in the all skills name
           // list.
