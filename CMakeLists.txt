@@ -35,8 +35,6 @@ endif(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDeb
 # Standard include directory
 include_directories(${CMAKE_SOURCE_DIR})
 
-find_package (nlohmann_json REQUIRED NO_MODULE)
-
 # (Should be Optional)
 find_package (Eigen3 REQUIRED)
 include_directories(${EIGEN_INCLUDE_DIR})
