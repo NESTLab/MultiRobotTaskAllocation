@@ -5,6 +5,5 @@ add_library(mrta_utilities SHARED
 
 target_link_libraries(
   mrta_utilities
-  nlohmann_json
   ${catkin_LIBRARIES}
 )

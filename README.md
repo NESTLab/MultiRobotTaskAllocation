@@ -10,7 +10,6 @@ You can skip [to next section](#directly-using-mrtaconfig) if you are not using
 [Skip to Getting Solution](#getting-solution)
 
 ### Using JSON file
-This repository uses [nlohmann/json](https://github.com/nlohmann/json.git) library to parse the json file. Please make sure to install it prior to usage. 
 
 The expected structure of the json file looks as following:
 
@@ -95,8 +94,6 @@ std::shared_ptr<const MrtaConfig::CompleteConfig> const mrta_config_ptr =
 ```
 
 ### Directly using `MrtaConfig`
-> Irrespective of you use json file or not, currently you are required to have [nlohmann/json](https://github.com/nlohmann/json.git) library installed. Otherwise the project may not compiled. This will be fixed in future. 
-
 Here it is assumed that you already have a variable of type `MrtaConfig::CompleteConfig`. This `struct` follows the same structure and concept as the `json` file explained in the [previous section](#using-json-file). Follow that section to know more about the fields and variables in `MrtaConfig::CompleteConfig`.
 
 To check if your created config variable is correct or not, you can use following function:

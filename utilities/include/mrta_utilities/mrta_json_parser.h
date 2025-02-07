@@ -1,6 +1,6 @@
 #pragma once
 #include <mrta_utilities/mrta_config.h>
-#include <nlohmann/json.hpp>
+#include <3rdparty/json.hpp>
 
 using json = nlohmann::json;
 
