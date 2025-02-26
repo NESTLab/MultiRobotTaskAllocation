@@ -26,7 +26,8 @@ void MrtaGenericSolver::putTravelTimesForRobot(
     std::map<std::string, MrtaConfig::Task>::const_iterator task_itr =
         mrta_complete_config->tasks_map.find(
             mrta_complete_config->setup.all_destination_names.at(task_id));
-    double robot_velocity = robot_itr->second.velocity;
+    double robot_velocity =
+        (robot_itr->second.velocity != 0) ? robot_itr->second.velocity : 1;
 
     ret_i_travel_time_matrix(START_ID, task_id) = getPureTravelTime(
         robot_itr->second.position, task_itr->second.position, robot_velocity);
