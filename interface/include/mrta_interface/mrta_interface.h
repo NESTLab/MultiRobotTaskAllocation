@@ -25,6 +25,12 @@ public:
 
   // Some solvers may require something specific which may or may not have been
   // provided by the user. Hence return 'false' if initialization failed.
+  inline std::shared_ptr<const MrtaGenericSolver> getMrtaSolverMethod() const {
+    return solver_method;
+  };
+
+  // Some solvers may require something specific which may or may not have been
+  // provided by the user. Hence return 'false' if initialization failed.
   inline bool setMrtaSolverMethod(MrtaConfig::SolverInfo solver_info,
                                   const std::string &robot_name = "",
                                   int robot_id = -1) {

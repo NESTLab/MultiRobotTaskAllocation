@@ -39,7 +39,7 @@ protected:
     }
   };
 
-  virtual bool checkConvergence() = 0;
+  virtual bool checkConvergence() override = 0;
 
   /**
    * @brief: solveOneIteration()
@@ -60,7 +60,7 @@ protected:
   size_t timestep = 0;
   size_t schedule_convergence_timer = 0;
 
-  const int SCHEDULE_STABLE_FOR_TIMESTEPS_y_T = 50;
+  const int SCHEDULE_STABLE_FOR_TIMESTEPS_y_T = 5;
   const int MAXIMUM_NUMBER_OF_ITERATIONS = 250;
 
   bool converged = false;
