@@ -21,6 +21,9 @@ private:
 
   bool checkConvergence() override { return converged; };
 
+  void communicateSolutionToAgents(
+      const MrtaSolution::CompleteSolution &complete_solution) override;
+
   void updateSolution(const std::vector<std::string> &curr_path_i_A,
                       MrtaSolution::CompleteSolution &ret_complete_solution);
 
@@ -78,8 +81,7 @@ private:
                             const std::string &task, size_t index);
 
   size_t getTaskInsertionIndex(const std::vector<std::string> &curr_path_i_A,
-                               const std::string &task,
-                               std::pair<size_t, size_t> index_of_pred_succ);
+                               const std::string &task);
 
   std::vector<std::string> ordered_tasks_i_B;
   std::priority_queue<std::pair<std::string, double>,

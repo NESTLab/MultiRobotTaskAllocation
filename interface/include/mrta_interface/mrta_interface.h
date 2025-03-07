@@ -94,6 +94,13 @@ public:
                                     ret_complete_solution);
   };
 
+  /////// ONLY FOR DECENTRALIZED METHODS!!! ///////
+  // Updates the local estimates with others' solutions for each agent
+  void communicateSolutionToAgents(
+      MrtaSolution::CompleteSolution &complete_solution) {
+    solver_method->communicateSolutionToAgents(complete_solution);
+  };
+
   bool checkConvergence() { return solver_method->checkConvergence(); }
 
   /**

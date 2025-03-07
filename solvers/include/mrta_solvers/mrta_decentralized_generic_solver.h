@@ -6,7 +6,7 @@ class MrtaDecentralizedGenericSolver : public MrtaGenericSolver {
 public:
   MrtaDecentralizedGenericSolver(const std::string &robot_name, int robot_id)
       : MrtaGenericSolver(), robot_name(robot_name), robot_id(robot_id){};
-  ~MrtaDecentralizedGenericSolver() override {};
+  ~MrtaDecentralizedGenericSolver() override{};
 
 protected:
   void updateMrtaConfig(
@@ -30,16 +30,20 @@ protected:
 
   void setRelevantTasks() {
     for (int j = START_ID + 1; j < END_ID; ++j) {
-      double total_effective_contribution =
-          task_requirements_matrix.row(j).dot(robot_skillset_matrix.row(robot_id));
+      double total_effective_contribution = task_requirements_matrix.row(j).dot(
+          robot_skillset_matrix.row(robot_id));
       if (total_effective_contribution > 0.0) {
-        std::string task_name = mrta_complete_config->setup.all_destination_names.at(j);
+        std::string task_name =
+            mrta_complete_config->setup.all_destination_names.at(j);
         relevant_tasks_names.push_back(task_name);
       }
     }
   };
 
   virtual bool checkConvergence() override = 0;
+
+  virtual void communicateSolutionToAgents(
+      const MrtaSolution::CompleteSolution &complete_solution) override = 0;
 
   /**
    * @brief: solveOneIteration()

@@ -21,6 +21,9 @@ protected:
 
   virtual bool checkConvergence() { return true; };
 
+  virtual void communicateSolutionToAgents(
+      const MrtaSolution::CompleteSolution &complete_solution){};
+
   bool limited_info_mode = false;
 
   /**
