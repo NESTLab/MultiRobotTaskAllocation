@@ -4,7 +4,6 @@ void MrtaDecentralizedHssSolver::solveOneIteration(
     const MrtaConfig::CompleteConfig &mrta_complete_config,
     MrtaSolution::CompleteSolution &ret_complete_solution) {
   std::vector<std::string> curr_path_i_A = {"START", "END"};
-  commAndVarUpdatePhase(ret_complete_solution);
   taskInclusionPhase(curr_path_i_A);
   if ((schedule_convergence_timer > SCHEDULE_STABLE_FOR_TIMESTEPS_y_T) &&
       areAllTasksSatisfied()) {
@@ -13,6 +12,10 @@ void MrtaDecentralizedHssSolver::solveOneIteration(
     converged = false;
 
   updateSolution(curr_path_i_A, ret_complete_solution);
+}
+void MrtaDecentralizedHssSolver::communicateSolutionToAgents(
+    const MrtaSolution::CompleteSolution &complete_solution) {
+  commAndVarUpdatePhase(complete_solution);
 }
 
 void MrtaDecentralizedHssSolver::updateSolution(
@@ -41,11 +44,7 @@ void MrtaDecentralizedHssSolver::updateSolution(
 void MrtaDecentralizedHssSolver::taskInclusionPhase(
     std::vector<std::string> &curr_path_i_A) {
   for (const std::string &task : relevant_tasks_names) {
-    std::pair<size_t, size_t> index_of_pred_succ =
-        getIndexOfPredecessorSuccessorToTask(task, curr_path_i_A,
-                                             ordered_tasks_i_B);
-    size_t task_proposed_index_l =
-        getTaskInsertionIndex(curr_path_i_A, task, index_of_pred_succ);
+    size_t task_proposed_index_l = getTaskInsertionIndex(curr_path_i_A, task);
     if (getAfterTaskInsertionCost(curr_path_i_A, task, task_proposed_index_l) <
         getCost(curr_path_i_A)) {
       curr_path_i_A.insert(curr_path_i_A.begin() + task_proposed_index_l, task);
@@ -105,12 +104,10 @@ MrtaDecentralizedHssSolver::getIndexOfPredecessorSuccessorToTask(
 }
 
 size_t MrtaDecentralizedHssSolver::getTaskInsertionIndex(
-    const std::vector<std::string> &curr_path_i_A, const std::string &task,
-    std::pair<size_t, size_t> index_of_pred_succ) {
+    const std::vector<std::string> &curr_path_i_A, const std::string &task) {
   double min_insertion_cost = std::numeric_limits<double>::max();
   size_t min_insertion_index = -1;
-  for (size_t index_l = index_of_pred_succ.first + 1;
-       index_l <= index_of_pred_succ.second; ++index_l) {
+  for (size_t index_l = 1; index_l < curr_path_i_A.size(); ++index_l) {
     double insertion_cost =
         getAfterTaskInsertionCost(curr_path_i_A, task, index_l);
     if (insertion_cost < min_insertion_cost) {
@@ -206,7 +203,6 @@ void MrtaDecentralizedHssSolver::commAndVarUpdatePhase(
 
   if (schedule_convergence_timer > SCHEDULE_STABLE_FOR_TIMESTEPS_y_T ||
       timestep > MAXIMUM_NUMBER_OF_ITERATIONS) {
-    defineTaskSequence(complete_solution);
     if (first) {
       schedule_convergence_timer = 0;
     }
@@ -260,12 +256,6 @@ void MrtaDecentralizedHssSolver::defineUnnecessaryRobots(
 
       addMapKeysToSet(robot_iter->second.skillset, coalition_skillset);
 
-      sum_of_arrival_times += robot_arrival_time_pair.second;
-      if (robot_arrival_time_pair.second > latest_arrival_time &&
-          robot_arrival_time_pair.first != robot_name) {
-        latest_arrival_time = robot_arrival_time_pair.second;
-      }
-
       std::map<std::string, MrtaConfig::Task>::const_iterator task_iter =
           mrta_complete_config->tasks_map.find(task);
       bool task_requirements_subset_of_coalition_skillset =
@@ -274,11 +264,37 @@ void MrtaDecentralizedHssSolver::defineUnnecessaryRobots(
         break;
     }
 
-    if (coalition_at_task.size() > 1) {
-      double average_arrival_time =
-          sum_of_arrival_times / coalition_at_task.size();
-      temp_ordered_tasks_set_i_B.emplace(
-          std::make_pair(task, average_arrival_time));
+    for (auto it = coalition_at_task.begin(); it != coalition_at_task.end();) {
+      if (coalition_at_task.size() < 2)
+        break;
+      std::string agent = it->data();
+      std::set<std::string> coalition_skillset_without_agent;
+      for (const auto &other_agent : coalition_at_task) {
+        if (other_agent == agent)
+          continue;
+        addMapKeysToSet(
+            mrta_complete_config->robots_map.at(other_agent).skillset,
+            coalition_skillset_without_agent);
+      }
+      bool task_requirements_subset_of_coalition_skillset =
+          isMapSubsetOfSet(mrta_complete_config->tasks_map.at(task).skillset,
+                           coalition_skillset_without_agent);
+      if (task_requirements_subset_of_coalition_skillset) {
+        it = coalition_at_task.erase(it);
+      } else {
+        ++it;
+      }
+    }
+
+    std::map<std::string, MrtaConfig::Task>::const_iterator task_iter =
+        mrta_complete_config->tasks_map.find(task);
+    bool task_requirements_subset_of_coalition_skillset =
+        isMapSubsetOfSet(task_iter->second.skillset, coalition_skillset);
+
+    if (coalition_at_task.size() > 0 &&
+        !task_requirements_subset_of_coalition_skillset) {
+      coalition_at_task.clear();
+      coalition_at_task.insert("nothing robot");
     }
 
     bool robot_not_in_coalition =
@@ -289,7 +305,16 @@ void MrtaDecentralizedHssSolver::defineUnnecessaryRobots(
       robot_unnecessary_at_task_i_u_j[task] = false;
     }
     int task_id = task_name_to_id_map[task];
-    task_start_time.at(task_id) = latest_arrival_time;
+
+    // for (const auto &agent : coalition_at_task) {
+    //   if (agent == robot_name) {
+    //     continue;
+    //   }
+    //   latest_arrival_time =
+    //       std::max(latest_arrival_time,
+    //                complete_solution.robot_task_schedule_map.at(agent)
+    //                    .task_arrival_time_map.at(task));
+    // }
   }
 }
 

@@ -55,9 +55,16 @@ public:
    *
    * @param solution Result solution will be updated in this argument
    */
-  void step(MrtaSolution::CompleteSolution &solution) const {
+  MrtaSolution::CompleteSolution
+  step(MrtaSolution::CompleteSolution solution) const {
+    // debugPrintSolution(solution);
     mrta_interface->solveMrtaProblem(mrta_config, solution);
+    return solution;
   };
+
+  void communicate(MrtaSolution::CompleteSolution &solution) {
+    mrta_interface->communicateSolutionToAgents(solution);
+  }
 
   /**
    * @brief Function to inform all robots each others' schedules
@@ -65,7 +72,7 @@ public:
    * @param neighbor_robots_solutions Vector to maintain individual solutions
    */
   void updateNeighboursEstimates(std::vector<MrtaSolution::CompleteSolution>
-                                     &neighbor_robots_solutions) const {
+                                     neighbor_robots_solutions) const {
     for (int i = 0; i < mrta_config.setup.number_of_robots; ++i) {
       if (i == robot_id)
         continue;
@@ -114,6 +121,9 @@ int main(int argc, char const *argv[]) {
   MrtaJsonParser::parseJsonFile("usage_example/usage_example.json",
                                 mrta_config);
 
+  // MrtaInterface interf;
+  // interf.debugPrintConfigCompleteConfig(mrta_config);
+
   // Vector to maintain independent robot objects
   std::vector<SingleRobot> robot_solver_vector;
   robot_solver_vector.reserve(mrta_config.setup.number_of_robots);
@@ -127,6 +137,7 @@ int main(int argc, char const *argv[]) {
   // Vector to maintain the solution produced by each of the robot
   std::vector<MrtaSolution::CompleteSolution> collective_solution(
       mrta_config.setup.number_of_robots);
+  MrtaSolution::CompleteSolution last_collective_solution;
 
   // Check if all the robots have converged.
   // Note: Convergence of ALL robots is necessary in some edge cases
@@ -136,18 +147,29 @@ int main(int argc, char const *argv[]) {
     all_converged = true;
     for (int i = 0; i < mrta_config.setup.number_of_robots; ++i) {
       // This is where the actual schedule is calculated
-      robot_solver_vector.at(i).step(collective_solution.at(i));
+      collective_solution.at(i) =
+          robot_solver_vector.at(i).step(last_collective_solution);
       // Check if the robot thinks it has converged. Here, the AND condition is
       // necessary to make sure that all the robots have converged.
       all_converged = all_converged && robot_solver_vector.at(i).hasConverged();
       // Printing the solution for debugging purpose.
-      robot_solver_vector.at(i).debugPrintSolution(collective_solution.at(i));
+      // robot_solver_vector.at(i).debugPrintSolution(collective_solution.at(i));
     }
-
+    
     // Inform all robots about others' solutions
-    for (const auto &robot : robot_solver_vector) {
-      robot.updateNeighboursEstimates(collective_solution);
+    
+    for (int i = 0; i < mrta_config.setup.number_of_robots; ++i) {
+      std::string ith_name = mrta_config.setup.all_robot_names.at(i);
+      last_collective_solution.robot_task_schedule_map[ith_name] =
+      collective_solution.at(i).robot_task_schedule_map[ith_name];
     }
+    for (int i = 0; i < mrta_config.setup.number_of_robots; ++i) {
+      robot_solver_vector.at(i).communicate(last_collective_solution);
+    }
+    robot_solver_vector.at(0).debugPrintSolution(last_collective_solution);
+    std::cout
+    << "==============================================================="
+        << std::endl;
   }
 
   MrtaJsonWriter::writeJsonFile(collective_solution.front(),
