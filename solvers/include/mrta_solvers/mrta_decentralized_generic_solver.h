@@ -1,5 +1,6 @@
 #pragma once
 #include <mrta_solvers/mrta_generic_solver.h>
+#include <map>
 #include <set>
 
 class MrtaDecentralizedGenericSolver : public MrtaGenericSolver {
@@ -36,8 +37,18 @@ protected:
         std::string task_name =
             mrta_complete_config->setup.all_destination_names.at(j);
         relevant_tasks_names.push_back(task_name);
+        task_satisfaction_check[task_name] = false;
       }
     }
+  };
+
+  virtual bool areAllTasksSatisfied() {
+    for (const auto task : relevant_tasks_names) {
+      if (!task_satisfaction_check[task]) {
+        return false;
+      }
+    }
+    return true;
   };
 
   virtual bool checkConvergence() override = 0;
@@ -58,6 +69,8 @@ protected:
           &others_solutions_in) {
     // others_solutions = &others_solutions_in;
   }
+
+  std::unordered_map<std::string, bool> task_satisfaction_check;
 
   std::vector<std::string> relevant_tasks_names;
 

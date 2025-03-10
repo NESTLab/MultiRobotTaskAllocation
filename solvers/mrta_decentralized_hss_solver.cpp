@@ -12,6 +12,7 @@ void MrtaDecentralizedHssSolver::solveOneIteration(
     converged = false;
 
   updateSolution(curr_path_i_A, ret_complete_solution);
+  this->timestep += 1;
 }
 void MrtaDecentralizedHssSolver::communicateSolutionToAgents(
     const MrtaSolution::CompleteSolution &complete_solution) {
@@ -141,6 +142,7 @@ double MrtaDecentralizedHssSolver::getCostOfTravelC1(
   double robot_arrival_at_last_task = 0.0;
   double last_task_execution_start = 0.0;
   double last_task_execution_duration = 0.0;
+  double ret_c1_cost = 0.0;
 
   for (const std::string &task : curr_path_i_A) {
     if (task == MrtaConfig::StdTaskNames::START_TASK) {
@@ -158,6 +160,7 @@ double MrtaDecentralizedHssSolver::getCostOfTravelC1(
 
     last_task = task;
     robot_arrival_at_last_task = arrival_at_task;
+    ret_c1_cost += robot_arrival_at_last_task;
     last_task_execution_start =
         std::max(task_start_time.at(index_of_task), arrival_at_task);
 
@@ -172,7 +175,7 @@ double MrtaDecentralizedHssSolver::getCostOfTravelC1(
           mrta_complete_config->tasks_map.find(last_task)->second.duration;
     }
   }
-  return robot_arrival_at_last_task;
+  return ret_c1_cost;
 }
 
 double MrtaDecentralizedHssSolver::getCostOfAttendanceC2(
@@ -184,12 +187,19 @@ double MrtaDecentralizedHssSolver::getCostOfAttendanceC2(
       continue;
 
     if (robot_unnecessary_at_task_i_u_j[task]) {
-      accumulated_cost += LARGE_COST;
+      accumulated_cost += getSigmoidReward();
     } else {
-      accumulated_cost -= LARGE_COST;
+      accumulated_cost -= getSigmoidReward();
     }
   }
   return accumulated_cost;
+}
+
+double MrtaDecentralizedHssSolver::getSigmoidReward() {
+  double numerator = D_1 * relevant_tasks_names.size() + D_2;
+  double exponential = D_3 * (timestep - D_4);
+  double denominator = 1 + std::exp(-exponential);
+  return numerator / denominator + D_5;
 }
 
 void MrtaDecentralizedHssSolver::commAndVarUpdatePhase(
@@ -291,6 +301,9 @@ void MrtaDecentralizedHssSolver::defineUnnecessaryRobots(
     bool task_requirements_subset_of_coalition_skillset =
         isMapSubsetOfSet(task_iter->second.skillset, coalition_skillset);
 
+    task_satisfaction_check[task_iter->first] =
+        task_requirements_subset_of_coalition_skillset;
+
     if (coalition_at_task.size() > 0 &&
         !task_requirements_subset_of_coalition_skillset) {
       coalition_at_task.clear();
@@ -306,15 +319,19 @@ void MrtaDecentralizedHssSolver::defineUnnecessaryRobots(
     }
     int task_id = task_name_to_id_map[task];
 
-    // for (const auto &agent : coalition_at_task) {
-    //   if (agent == robot_name) {
-    //     continue;
-    //   }
-    //   latest_arrival_time =
-    //       std::max(latest_arrival_time,
-    //                complete_solution.robot_task_schedule_map.at(agent)
-    //                    .task_arrival_time_map.at(task));
-    // }
+    for (const auto &agent : coalition_at_task) {
+      if (coalition_at_task.size() < 2)
+        break;
+
+      // if (agent == robot_name) {
+      //   continue;
+      // }
+      latest_arrival_time =
+          std::max(latest_arrival_time,
+                   complete_solution.robot_task_schedule_map.at(agent)
+                       .task_arrival_time_map.at(task));
+    }
+    task_start_time.at(task_id) = latest_arrival_time;
   }
 }
 

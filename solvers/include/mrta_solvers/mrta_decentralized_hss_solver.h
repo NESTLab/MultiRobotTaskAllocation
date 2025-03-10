@@ -7,7 +7,9 @@
 class MrtaDecentralizedHssSolver : public MrtaDecentralizedGenericSolver {
 public:
   MrtaDecentralizedHssSolver(const std::string &robot_name, int robot_id)
-      : MrtaDecentralizedGenericSolver(robot_name, robot_id){};
+      : MrtaDecentralizedGenericSolver(robot_name, robot_id) {
+    timestep = 0;
+  };
   ~MrtaDecentralizedHssSolver() override{};
 
 private:
@@ -16,8 +18,6 @@ private:
       MrtaSolution::CompleteSolution &ret_complete_solution) override;
 
   void updateWorldStatus() override{};
-
-  bool areAllTasksSatisfied() { return true; };
 
   bool checkConvergence() override { return converged; };
 
@@ -91,7 +91,14 @@ private:
 
   std::unordered_map<std::string, bool> robot_unnecessary_at_task_i_u_j;
 
+  double getSigmoidReward();
+
   const double LARGE_COST = 100000;
+  const double D_1 = 100.0;
+  const double D_2 = 500.0;
+  const double D_3 = 0.1;
+  const double D_4 = 40.0;
+  const double D_5 = 400.0;
 
   ////////////////////////////////////////////////////////////////////////
   /////////  C O M M   A N D   V A R   U P D A T E   P H A S E   /////////
@@ -130,6 +137,7 @@ private:
   bool first = false;
 
   const double ARRIVAL_TIME_CHANGE_THRESHOLD_Y = 0.5;
+  int timestep = 0;
 
   Eigen::MatrixXd last_timestep_robot_arrival_times_at_tasks;
   Eigen::MatrixXd robot_arrival_times_at_tasks;
